@@ -1,7 +1,10 @@
+package server;
+
+import attributes.Account;
+import attributes.exhangeRateService.ExchangeRateService;
+import attributes.exhangeRateService.ExchangeRequest;
+
 import java.io.*;
-import java.net.*;
-import java.rmi.Naming;
-import java.rmi.registry.LocateRegistry;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
@@ -39,11 +42,11 @@ public class Server {
                     float euroBalance = Float.parseFloat(details[4]);
                     float yenBalance = Float.parseFloat(details[5]);
 
-                    Account account = new Account(username, password);
-                    account.set_gbp_balance(gbpBalance);
-                    account.set_usd_balance(usdBalance);
-                    account.set_euro_balance(euroBalance);
-                    account.set_yen_balance(yenBalance);
+                    Account account = new Account(username, password,0,0,0,0);
+                    account.setGbpBalance(gbpBalance);
+                    account.setUsdBalance(usdBalance);
+                    account.setEuroBalance(euroBalance);
+                    account.setYenBalance(yenBalance);
 
                     accounts.put(username, account);
                 }
@@ -54,7 +57,7 @@ public class Server {
     }
 
     private synchronized void loadExchangeRates() {
-        System.out.println("Fetching exchange rates from ExchangeRateService...");
+        System.out.println("Fetching exchange rates from attirbutes.exhangeRateService.ExchangeRateService...");
         Map<String, Double> latestRates = exchangeRateService.fetchLatestRates();
         exchangeRates.clear(); // Clear existing rates
         for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
@@ -75,8 +78,8 @@ public class Server {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
             for (Account account : accounts.values()) {
                 writer.write(account.getUsername() + "," + account.getPassword() + ","
-                        + account.get_gbp_balance() + "," + account.get_usd_balance() + ","
-                        + account.get_euro_balance() + "," + account.get_yen_balance());
+                        + account.getGbpBalance() + "," + account.getUsdBalance() + ","
+                        + account.getEuroBalance() + "," + account.getYenBalance());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -88,7 +91,7 @@ public class Server {
         if (accounts.containsKey(username)) {
             return false;
         }
-        Account newAccount = new Account(username, password);
+        Account newAccount = new Account(username, password, 0, 0, 0 , 0);
         accounts.put(username, newAccount);
         saveAccounts();
         return true;
@@ -111,14 +114,14 @@ public class Server {
         return new ArrayList<>(onlineUsers);
     }
 
-    public synchronized Map<String, Float> getAccountBalances(String username) {
+    public synchronized Map<String, Double> getAccountBalances(String username) {
         Account account = accounts.get(username);
         if (account != null) {
-            Map<String, Float> balances = new HashMap<>();
-            balances.put("GBP", account.get_gbp_balance());
-            balances.put("USD", account.get_usd_balance());
-            balances.put("EUR", account.get_euro_balance());
-            balances.put("YEN", account.get_yen_balance());
+            Map<String, Double> balances = new HashMap<>();
+            balances.put("GBP", account.getGbpBalance());
+            balances.put("USD", account.getUsdBalance());
+            balances.put("EUR", account.getEuroBalance());
+            balances.put("YEN", account.getYenBalance());
             return balances;
         }
         return Collections.emptyMap();
@@ -141,7 +144,7 @@ public class Server {
         }
     }
 
-    public boolean transferCurrency(String fromUser, String toUser, String currencyType, float amount) {
+    public boolean transferCurrency(String fromUser, String toUser, String currencyType, double amount) {
         balanceLock.lock();
         try {
             Account fromAccount = accounts.get(fromUser);
@@ -158,22 +161,17 @@ public class Server {
         }
     }
 
-    private boolean hasSufficientFunds(Account account, String currency, float amount) {
-        switch (currency.toUpperCase()) {
-            case "GBP":
-                return account.get_gbp_balance() >= amount;
-            case "USD":
-                return account.get_usd_balance() >= amount;
-            case "EUR":
-                return account.get_euro_balance() >= amount;
-            case "YEN":
-                return account.get_yen_balance() >= amount;
-            default:
-                return false;
-        }
+    private boolean hasSufficientFunds(Account account, String currency, double amount) {
+        return switch (currency.toUpperCase()) {
+            case "GBP" -> account.getGbpBalance() >= amount;
+            case "USD" -> account.getUsdBalance() >= amount;
+            case "EUR" -> account.getEuroBalance() >= amount;
+            case "YEN" -> account.getYenBalance() >= amount;
+            default -> false;
+        };
     }
 
-    private void adjustBalance(Account account, String currency, float amount) {
+    private void adjustBalance(Account account, String currency, double amount) {
         switch (currency.toUpperCase()) {
             case "GBP":
                 account.addToGbpBalance(amount);
@@ -206,21 +204,6 @@ public class Server {
             return exchangeRates.getOrDefault(currencyPair, 1.0);
         } finally {
             exchangeRateLock.readLock().unlock();
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            Server server = new Server();
-            RmiServerMethods rmiServer = new RmiServerMethods(server);
-
-            // Start RMI registry
-            LocateRegistry.createRegistry(1099); // Default RMI port
-            Naming.rebind("rmi://127.0.0.1/RmiServer", rmiServer);
-
-            System.out.println("RMI Server is running...");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

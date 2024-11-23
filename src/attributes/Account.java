@@ -1,3 +1,5 @@
+package attributes;
+
 import java.io.*;
 import java.util.Scanner;
 
@@ -5,8 +7,8 @@ import java.util.Scanner;
 
 public class Account {
 
-    private String username;
-    private String password;
+    private final String username;
+    private final String password;
 
     public String getUsername() {
         return username;
@@ -47,51 +49,51 @@ public class Account {
         return this.yenBalance;
     }
 
-    public void setGbpBalance(float gbp_balance) {
+    public void setGbpBalance(double gbp_balance) {
         this.gbpBalance = gbp_balance;
     }
 
-    public void setUsdBalance(float usd_balance) {
+    public void setUsdBalance(double usd_balance) {
         this.usdBalance = usd_balance;
     }
 
-    public void setEuroBalance(float euro_balance) {
+    public void setEuroBalance(double euro_balance) {
         this.euroBalance = euro_balance;
     }
 
-    public void setYenBalance(float yen_balance) {
+    public void setYenBalance(double yen_balance) {
         this.yenBalance = yen_balance;
     }
 
-    public void addToGbpBalance(float amount){
+    public void addToGbpBalance(double amount){
         this.gbpBalance += amount;
     }
 
-    public void addToEuroBalance(float amount){
+    public void addToEuroBalance(double amount){
         this.euroBalance += amount;
     }
 
-    public void addToUsdBalance(float amount){
+    public void addToUsdBalance(double amount){
         this.usdBalance += amount;
     }
 
-    public void addToYenBalance(float amount){
+    public void addToYenBalance(double amount){
         this.yenBalance += amount;
     }
 
-    public void decreaseGbpBalance(float amount){
+    public void decreaseGbpBalance(double amount){
         this.gbpBalance -= amount;
     }
 
-    public void decreaseEuroBalance(float amount){
+    public void decreaseEuroBalance(double amount){
         this.euroBalance -= amount;
     }
 
-    public void decreaseUsdBalance(float amount){
+    public void decreaseUsdBalance(double amount){
         this.usdBalance -= amount;
     }
 
-    public void decreaseYenBalance(float amount){
+    public void decreaseYenBalance(double amount){
         this.yenBalance -= amount;
     }
 
@@ -109,7 +111,7 @@ public class Account {
                 System.out.println("One or more details are incorrect. Please try again.");
                 // replace with call to menu option
             } else {
-                System.out.println("Account doesn't appear to exist - creating new one...");
+                System.out.println("attirbutes.Account doesn't appear to exist - creating new one...");
                 createAccount(username, password);
             }
 
