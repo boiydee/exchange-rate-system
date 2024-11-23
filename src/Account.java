@@ -9,33 +9,33 @@ public class Account {
     private String password;
 
     // different balances for each exchange currency
-    private float gbpBalance;
-    private float usdBalance;
-    private float euroBalance;
-    private float yenBalance;
+    private double gbpBalance;
+    private double usdBalance;
+    private double euroBalance;
+    private double yenBalance;
 
-    public Account(String username, String password) {
+    public Account(String username, String password, double gbpBalance, double usdBalance, double euroBalance, double yenBalance) {
         this.username = username;
         this.password = password;
-        this.gbpBalance = 0;
-        this.usdBalance = 0;
-        this.euroBalance = 0;
-        this.yenBalance = 0;
+        this.gbpBalance = gbpBalance;
+        this.usdBalance = usdBalance;
+        this.euroBalance = euroBalance;
+        this.yenBalance = yenBalance;
     }
 
-    public float getGbpBalance() {
+    public double getGbpBalance() {
         return this.gbpBalance;
     }
 
-    public float getUsdBalance() {
+    public double getUsdBalance() {
         return this.usdBalance;
     }
 
-    public float getEuroBalance() {
+    public double getEuroBalance() {
         return this.euroBalance;
     }
 
-    public float getYenBalance() {
+    public double getYenBalance() {
         return this.yenBalance;
     }
 
@@ -113,10 +113,6 @@ public class Account {
     public void createAccount(String username, String password) throws IOException {
         File accounts = new File("src/bankAccounts.txt");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(accounts, true))){
-            setGbpBalance(0.0F);
-            setEuroBalance(0.0F);
-            setUsdBalance(0.0F);
-            setYenBalance(0.0F);
             writer.write(username + "," + password + "," + getGbpBalance() + "," + getUsdBalance() + "," + getEuroBalance() + "," + getYenBalance());
             writer.newLine();
         }
@@ -134,7 +130,7 @@ public class Account {
         System.out.println("Please enter your account password: ");
         String pass = input.nextLine();
 
-        Account account = new Account(user, pass);
+        Account account = new Account(user, pass, 5.0, 14.0, 0.0, 16);
 
         account.verifyAccount(user, pass);
 
