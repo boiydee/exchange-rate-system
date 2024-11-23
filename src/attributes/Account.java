@@ -99,7 +99,7 @@ public class Account {
 
     // This method needs to use the accounts stored on server - using a regular file right now for testing purposes
     public void verifyAccount(String username, String password) throws IOException {
-        File accounts = new File("src/bankAccounts.txt");
+        File accounts = new File("src/resources/bankAccounts.txt");
         try (BufferedReader reader = new BufferedReader(new FileReader(accounts))) {
             String[] details = reader.readLine().split(",");
             String user = details[0];
@@ -121,7 +121,7 @@ public class Account {
     }
 
     public void createAccount(String username, String password) throws IOException {
-        File accounts = new File("src/bankAccounts.txt");
+        File accounts = new File("src/resources/bankAccounts.txt");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(accounts, true))){
             writer.write(username + "," + password + "," + getGbpBalance() + "," + getUsdBalance() + "," + getEuroBalance() + "," + getYenBalance());
             writer.newLine();

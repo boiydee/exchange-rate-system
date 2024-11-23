@@ -27,7 +27,7 @@ public class Server {
 
     private synchronized void loadAccounts() {
         System.out.println("Loading accounts from file...");
-        File file = new File("src/bankAccounts.txt");
+        File file = new File("src/resources/bankAccounts.txt");
         if (!file.exists()) return;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -75,7 +75,7 @@ public class Server {
 
     private synchronized void saveAccounts() {
         System.out.println("Saving accounts to file...");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/resources/bankAccounts.txt"))) {
             for (Account account : accounts.values()) {
                 writer.write(account.getUsername() + "," + account.getPassword() + ","
                         + account.getGbpBalance() + "," + account.getUsdBalance() + ","
