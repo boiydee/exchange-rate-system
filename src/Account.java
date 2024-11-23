@@ -8,6 +8,14 @@ public class Account {
     private String username;
     private String password;
 
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
     // different balances for each exchange currency
     private double gbpBalance;
     private double usdBalance;
