@@ -1,3 +1,5 @@
+package attributes.cmdLineUI;
+
 /**
  * Holds the different options for the menu
  */
@@ -11,11 +13,10 @@ public enum MenuOptions {
     GETCURRENTEXCHANGERATES("View current exchange rates"),
     GETONLINEUSERS("View Online Users"),
     SENDTRANSFERREQUESTS("Send new transfer request"),
-    SENDNEWACCOUNTTOSERVER("send new account to server"),
 
     EXIT("Quit");
 
-    private String description;
+    private final String description;
 
     MenuOptions(String description) {
         this.description = description;
