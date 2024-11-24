@@ -61,7 +61,6 @@ public class MainGUI extends JFrame {
             // Call the server's method to get outgoing requests
             List<String> outgoingRequests = serverStub.getOutgoingTransferRequests(username);
 
-            // Check if the list is empty
             if (outgoingRequests.isEmpty()) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -70,11 +69,11 @@ public class MainGUI extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE
                 );
             } else {
-                // Display the list of outgoing requests in a formatted string
                 StringBuilder requests = new StringBuilder("Outgoing Transfer Requests:\n");
                 for (String request : outgoingRequests) {
                     requests.append(request).append("\n");
                 }
+
                 JOptionPane.showMessageDialog(
                         this,
                         requests.toString(),
@@ -83,17 +82,15 @@ public class MainGUI extends JFrame {
                 );
             }
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
-    public void fetchIncomingRequests() {
+
+    private void fetchIncomingRequests() {
         try {
-            // Call the server's method to get incoming requests for the current user
             List<String> incomingRequests = serverStub.getIncomingTransferRequests(username);
 
-            // Check if the list is empty
             if (incomingRequests.isEmpty()) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -102,26 +99,66 @@ public class MainGUI extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE
                 );
             } else {
-                // Display the list of incoming requests in a formatted string
-                StringBuilder requests = new StringBuilder("Incoming Transfer Requests:\n");
-                for (String request : incomingRequests) {
-                    requests.append(request).append("\n");
-                }
-                JOptionPane.showMessageDialog(
+                String selectedRequest = (String) JOptionPane.showInputDialog(
                         this,
-                        requests.toString(),
+                        "Select a request to process:",
                         "Incoming Requests",
-                        JOptionPane.INFORMATION_MESSAGE
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        incomingRequests.toArray(),
+                        incomingRequests.get(0)
                 );
+
+                if (selectedRequest != null) {
+                    int choice = JOptionPane.showOptionDialog(
+                            this,
+                            "Do you want to accept or reject this request?\n" + selectedRequest,
+                            "Process Request",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            new String[]{"Accept", "Reject"},
+                            "Accept"
+                    );
+
+                    if (choice == JOptionPane.YES_OPTION) {
+                        processTransactionRequest(selectedRequest, true);
+                    } else if (choice == JOptionPane.NO_OPTION) {
+                        processTransactionRequest(selectedRequest, false);
+                    }
+
+                    // Return to main menu after processing
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Request processed. Returning to the main menu.",
+                            "Info",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    returnToMainMenu();
+                }
             }
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
+    private void processTransactionRequest(String requestId, boolean accepted) {
+        try {
+            serverStub.sendTransferRequestResponse(requestId, accepted);
+        } catch (RemoteException e) {
+            showError(e);
+        }
+    }
 
-    public void fetchAccountInfo() {
+    private void returnToMainMenu() {
+        dispose();
+        new MainGUI(username, serverStub).setVisible(true);
+    }
+
+
+
+
+    private void fetchAccountInfo() {
         try {
             // Call the server's method to get account info for the current user
             List<String> accountInfo = serverStub.getCurrentUserInfo(username);
@@ -154,7 +191,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    public void fetchExchangeRates() {
+    private void fetchExchangeRates() {
         try {
             // Call the server's method to get exchange rates
             Map<String, Double> exchangeRates = serverStub.getCurrentExchangeRates();
@@ -187,7 +224,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    public void fetchOnlineUsers() {
+    private void fetchOnlineUsers() {
         try {
             // Call the server's method to get the list of online users
             List<String> onlineUsers = serverStub.getOnlineUsers();

@@ -26,6 +26,7 @@ public class ServerLogic {
     public ServerLogic() {
         loadAccounts();
         loadExchangeRates();
+        loadExchangeRequests();
     }
 
     // Load accounts from file
@@ -215,29 +216,22 @@ public class ServerLogic {
 
     public void addTransferRequest(String sender, String recipient, String currency, double amount) {
         synchronized (exchangeRequests) {
-            exchangeRequests.add(new ExchangeRequest(sender, recipient, currency, amount, TransactionState.PENDING));
-            saveTransferRequests();
+            // Generate a unique ID for the request
+            String requestId = UUID.randomUUID().toString();
+
+            // Create a new exchange request with the ID
+            ExchangeRequest newRequest = new ExchangeRequest(sender, recipient, currency, amount, TransactionState.PENDING, requestId);
+
+            // Add the request to the list
+            exchangeRequests.add(newRequest);
+
+            // Save the updated list of requests to the file
+            saveExchangeRequests();
         }
     }
 
-    public void processTransferRequest(String requestId, boolean accepted) {
-        synchronized (exchangeRequests) {
-            ExchangeRequest request = exchangeRequests.stream()
-                    .filter(r -> r.getId().equals(requestId))
-                    .findFirst()
-                    .orElse(null);
-            if (request != null) {
-                if (accepted) {
-                    transferCurrency(request.getOriginAccount(), request.getDestinationAccount(), request.getCurrency(), (float) request.getAmount());
-                    request.setState(TransactionState.ACCEPTED);
-                } else {
-                    request.setState(TransactionState.CANCELLED);
-                }
-            }
-        }
-    }
 
-    public void updateAccountBalance(String username, String currency, double amount) {
+    public void updateAccountBalance(String username, String currency, double amount) throws IOException {
         balanceLock.lock();
         try {
             Account account = accounts.get(username);
@@ -266,6 +260,8 @@ public class ServerLogic {
     }
 
 
+
+
     private boolean hasSufficientFunds(Account account, String currency, float amount) {
         return switch (currency.toUpperCase()) {
             case "GBP" -> account.getGbp_balance() >= amount;
@@ -291,18 +287,18 @@ public class ServerLogic {
             Account fromAccount = accounts.get(fromUser);
             Account toAccount = accounts.get(toUser);
 
-            // Validate both accounts exist and sufficient funds are available
             if (fromAccount != null && toAccount != null && hasSufficientFunds(fromAccount, currencyType, amount)) {
-                adjustBalance(fromAccount, currencyType, -amount); // Deduct from sender
-                adjustBalance(toAccount, currencyType, amount);    // Add to recipient
-                saveAccounts(); // Persist changes
+                adjustBalance(fromAccount, currencyType, -amount);
+                adjustBalance(toAccount, currencyType, amount);
                 return true;
             }
-            return false; // Transfer fails if accounts are invalid or insufficient funds
+            return false; // Transfer fails if accounts are invalid or funds are insufficient
         } finally {
             balanceLock.unlock();
         }
     }
+
+
 
 
     // Verify or Create attributes.Account
@@ -355,7 +351,7 @@ public class ServerLogic {
     // Save Accounts to File
     public void saveAccounts() {
         fileLock.writeLock().lock();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(accountsFilePath))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/resources/bankAccounts.txt"))) {
             for (Account account : accounts.values()) {
                 writer.write(account.getUsername() + "," + account.getPassword() + ","
                         + account.getGbp_balance() + "," + account.getUsd_balance() + ","
@@ -368,6 +364,7 @@ public class ServerLogic {
             fileLock.writeLock().unlock();
         }
     }
+
 
     public void saveTransferRequests() {
         fileLock.writeLock().lock();
@@ -403,4 +400,88 @@ public class ServerLogic {
             return List.copyOf(onlineUsers);
         }
     }
+
+    public void processTransferRequest(String requestId, boolean accepted) {
+        synchronized (exchangeRequests) {
+            // Locate the request by its ID
+            ExchangeRequest request = exchangeRequests.stream()
+                    .filter(r -> r.getId().equals(requestId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (request != null) {
+                if (accepted) {
+                    // Perform the actual transfer
+                    boolean success = transferCurrency(
+                            request.getOriginAccount(),
+                            request.getDestinationAccount(),
+                            request.getCurrency(),
+                            (float) request.getAmount()
+                    );
+
+                    if (success) {
+                        request.setState(TransactionState.ACCEPTED);
+                    }
+                } else {
+                    request.setState(TransactionState.CANCELLED);
+                }
+
+                // Save updated requests to the file
+                saveExchangeRequests();
+            }
+        }
+    }
+
+
+
+
+    public void saveExchangeRequests() {
+        synchronized (exchangeRequests) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/resources/exchangeRequests.txt"))) {
+                for (ExchangeRequest request : exchangeRequests) {
+                    writer.write(
+                            request.getOriginAccount() + "," +
+                                    request.getDestinationAccount() + "," +
+                                    request.getCurrency() + "," +
+                                    request.getAmount() + "," +
+                                    request.getState() + "," +
+                                    request.getId()
+                    );
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public void loadExchangeRequests() {
+        synchronized (exchangeRequests) {
+            try (BufferedReader reader = new BufferedReader(new FileReader("src/resources/exchangeRequests.txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] details = line.split(",");
+                    if (details.length == 6) {
+                        String origin = details[0];
+                        String destination = details[1];
+                        String currency = details[2];
+                        double amount = Double.parseDouble(details[3]);
+                        TransactionState state = TransactionState.valueOf(details[4]);
+                        String id = details[5];
+
+                        ExchangeRequest request = new ExchangeRequest(origin, destination, currency, amount, state, id);
+                        exchangeRequests.add(request);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+
 }

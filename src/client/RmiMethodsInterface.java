@@ -19,7 +19,6 @@ public interface RmiMethodsInterface extends Remote {
 
     void sendTransferRequest(String sender, String recipient, String currency, double amount) throws RemoteException;
 
-    void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException;
 
     void updateAccountBalance(String username, String currency, double amount) throws IOException;
 
@@ -28,5 +27,8 @@ public interface RmiMethodsInterface extends Remote {
     void addOnlineUser(String username) throws RemoteException;
 
     void removeOnlineUser(String username) throws RemoteException;
+
+    void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException;
+
 
 }

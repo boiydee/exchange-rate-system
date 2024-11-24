@@ -2,8 +2,6 @@ package attributes.exhangeRateService;
 
 import attributes.TransactionState;
 
-import java.util.Currency;
-import java.util.Map;
 import java.util.UUID;
 
 public class ExchangeRequest {
@@ -14,17 +12,18 @@ public class ExchangeRequest {
     private final double amount;
     private TransactionState state;
 
-    public ExchangeRequest(String originAccount, String destinationAccount, String currency, double amount, TransactionState state) {
-        this.id = UUID.randomUUID().toString(); // Generate a unique ID
-        this.originAccount = originAccount;
-        this.destinationAccount = destinationAccount;
-        this.currency = currency;
-        this.amount = amount;
-        this.state = state;
-    }
+    // Constructor
+//    public ExchangeRequest(String originAccount, String destinationAccount, String currency, double amount, TransactionState state) {
+//        this.id = UUID.randomUUID().toString();
+//        this.originAccount = originAccount;
+//        this.destinationAccount = destinationAccount;
+//        this.currency = currency;
+//        this.amount = amount;
+//        this.state = state;
+//    }
 
     public ExchangeRequest(String originAccount, String destinationAccount, String currency, double amount, TransactionState state, String id) {
-        this.id = id; // Generate a unique ID
+        this.id = id;
         this.originAccount = originAccount;
         this.destinationAccount = destinationAccount;
         this.currency = currency;
@@ -32,6 +31,8 @@ public class ExchangeRequest {
         this.state = state;
     }
 
+
+    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -59,6 +60,8 @@ public class ExchangeRequest {
     public void setState(TransactionState state) {
         this.state = state;
     }
+
+
 
     @Override
     public String toString() {

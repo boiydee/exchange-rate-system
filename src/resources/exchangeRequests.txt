@@ -1,2 +1,3 @@
 sender1,recipient1,USD,100.0,PENDING,c1f7064b-37a9-49f9-b00d-66b51cdc9f14
 sender2,recipient2,GBP,200.0,PENDING,037bd668-8880-4f55-955a-e9ecce6eac8a
+test2,test,GBP,100.0,PENDING,653c0120-d270-4cf0-a0de-4eaa18fcf583
