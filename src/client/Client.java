@@ -2,6 +2,8 @@ package client;
 
 import attributes.cmdLineUI.MenuOptions;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Client {
@@ -14,8 +16,6 @@ public class Client {
     }
 
     public void runClient() throws Exception {
-        rmiServerMethods.getCurrentExchangeRates();
-
         MenuOptions userInput = MenuOptions.GETONLINEUSERS;
         while (!userInput.equals(MenuOptions.EXIT)) {
             displayMenu();
@@ -25,7 +25,28 @@ public class Client {
                 case GETOUTGOINGTRANSFERREQUESTS -> rmiServerMethods.getOutgoingTransferRequests();
                 case GETINCOMINGTRANSFERREQUESTS -> rmiServerMethods.getIncomingTransferRequests();
                 case GETCURRENTUSERINFO -> System.out.println(rmiServerMethods.getCurrentUserInfo(name));
-                case GETCURRENTEXCHANGERATES -> rmiServerMethods.getCurrentExchangeRates();
+                case GETCURRENTEXCHANGERATES -> {
+                    System.out.println("To transfer currencies within your account enter your own username");
+                    System.out.print("What currency do you want to see the exchange rates for? (JPY, GBP, EUR, USD)");
+                    ArrayList<String> options = new ArrayList<>();
+                    options.add("JPY");
+                    options.add("GBP");
+                    options.add("USD");
+                    options.add("EUR");
+                    String chosenCurrency = input.nextLine();
+                    while (!options.contains(chosenCurrency)){
+                        System.out.print("What currency do you want to see the exchange rates for? (JPY, GBP, EUR, USD)");
+                        chosenCurrency = input.nextLine();
+                    }
+                    Map<String, Double> rates = rmiServerMethods.getCurrentExchangeRates(chosenCurrency);
+                    System.out.println(chosenCurrency + ":");
+                    for (String currency : rates.keySet()){
+                        if (rates.get(currency) != null){
+                            System.out.println("\t" + currency + " 1 -> " + rates.get(currency));
+                        }
+                    }
+                    System.out.println();
+                }
                 case GETONLINEUSERS -> System.out.println(rmiServerMethods.getOnlineUsers());
                 case SENDTRANSFERREQUESTS -> {
                     System.out.println("To transfer currencies within your account enter your own username");
@@ -43,12 +64,12 @@ public class Client {
         rmiServerMethods.logout(name);
     }
 
-    public boolean login(String name, String password) throws RemoteException {
+    protected boolean login(String name, String password) throws RemoteException {
         this.name = name;
         return rmiServerMethods.login(name, password);
     }
 
-    public boolean setupNewAccount(String name, String password) throws RemoteException {
+    protected boolean setupNewAccount(String name, String password) throws RemoteException {
         this.name = name;
         return rmiServerMethods.sendNewAccountToServer(name, password);
     }
