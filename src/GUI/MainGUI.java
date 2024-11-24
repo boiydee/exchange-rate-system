@@ -56,7 +56,7 @@ public class MainGUI extends JFrame {
         }
     }
 
-    private void fetchOutgoingRequests() {
+    public void fetchOutgoingRequests() {
         try {
             // Call the server's method to get outgoing requests
             List<String> outgoingRequests = serverStub.getOutgoingTransferRequests();
@@ -88,7 +88,7 @@ public class MainGUI extends JFrame {
         }
     }
 
-    private void fetchIncomingRequests() {
+    public void fetchIncomingRequests() {
         try {
             // Call the server's method to get incoming requests for the current user
             List<String> incomingRequests = serverStub.getIncomingTransferRequests(username);
@@ -121,7 +121,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void fetchAccountInfo() {
+    public void fetchAccountInfo() {
         try {
             // Call the server's method to get account info for the current user
             List<String> accountInfo = serverStub.getCurrentUserInfo(username);
@@ -154,7 +154,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void fetchExchangeRates() {
+    public void fetchExchangeRates() {
         try {
             // Call the server's method to get exchange rates
             Map<String, Double> exchangeRates = serverStub.getCurrentExchangeRates();
@@ -187,7 +187,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void fetchOnlineUsers() {
+    public void fetchOnlineUsers() {
         try {
             // Call the server's method to get the list of online users
             List<String> onlineUsers = serverStub.getOnlineUsers();
@@ -220,7 +220,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void sendTransferRequest() {
+    public void sendTransferRequest() {
         try {
             // Prompt for recipient username
             String recipient = JOptionPane.showInputDialog(this, "Enter recipient username:");

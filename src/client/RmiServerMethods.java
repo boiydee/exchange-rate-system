@@ -52,10 +52,6 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
         serverLogic.processTransferRequest(requestId, accepted);
     }
 
-//    @Override
-//    public void sendNewAccountToServer(String username, String password) throws RemoteException {
-//        serverLogic.createAccount(username, password);
-//    }
 
     @Override
     public void updateAccountBalance(String username, String currency, double amount) throws IOException {
