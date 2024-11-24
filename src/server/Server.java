@@ -13,7 +13,7 @@ public class Server {
     private static final int PORT = 12345;
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
     private final List<String> onlineUsers = Collections.synchronizedList(new ArrayList<>());
-    private final Map<String, Double> exchangeRates = new ConcurrentHashMap<>();
+    private final Map<String, Map<String,Double>> exchangeRates = new ConcurrentHashMap<>();
     private final List<ExchangeRequest> exchangeRequests = Collections.synchronizedList(new ArrayList<>());
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private final Lock balanceLock = new ReentrantLock();
@@ -58,19 +58,17 @@ public class Server {
 
     private synchronized void loadExchangeRates() {
         System.out.println("Fetching exchange rates from attirbutes.exhangeRateService.ExchangeRateService...");
-        Map<String, Double> latestRates = exchangeRateService.fetchLatestRates();
+        ArrayList<String> currencies = new ArrayList<>();
+        currencies.add("USD");
+        currencies.add("GBP");
+        currencies.add("JPY");
+        currencies.add("EUR");
         exchangeRates.clear(); // Clear existing rates
-        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
-            String currency = entry.getKey();
-            Double rate = entry.getValue();
-
-            // Add basic exchange rates for bidirectional conversions
-            exchangeRates.put(currency + "-USD", rate); // Assuming all rates are against USD
-            if (!currency.equals("USD")) { // Avoid self-conversion for USD
-                exchangeRates.put("USD-" + currency, 1 / rate); // Reverse rate
-            }
+        for (String currency : currencies) {
+            var exchangeRatesMap = exchangeRateService.getConvertionRates(currency);
+            exchangeRates.put(currency, exchangeRatesMap);
         }
-        System.out.println("Exchange rates updated: " + exchangeRates);
+        System.out.println("Exchange rates updated");
     }
 
     private synchronized void saveAccounts() {
@@ -121,7 +119,7 @@ public class Server {
             balances.put("GBP", account.getGbpBalance());
             balances.put("USD", account.getUsdBalance());
             balances.put("EUR", account.getEuroBalance());
-            balances.put("YEN", account.getYenBalance());
+            balances.put("JPY", account.getYenBalance());
             return balances;
         }
         return Collections.emptyMap();
@@ -132,7 +130,7 @@ public class Server {
         try {
             Account account = accounts.get(username);
             if (account != null && hasSufficientFunds(account, fromCurrency, amount)) {
-                float exchangeRate = (float) getExchangeRate(fromCurrency + "-" + toCurrency);
+                float exchangeRate = (float) getExchangeRate(fromCurrency, toCurrency);
                 adjustBalance(account, fromCurrency, -amount);
                 adjustBalance(account, toCurrency, amount * exchangeRate);
                 saveAccounts();
@@ -166,7 +164,7 @@ public class Server {
             case "GBP" -> account.getGbpBalance() >= amount;
             case "USD" -> account.getUsdBalance() >= amount;
             case "EUR" -> account.getEuroBalance() >= amount;
-            case "YEN" -> account.getYenBalance() >= amount;
+            case "JPY" -> account.getYenBalance() >= amount;
             default -> false;
         };
     }
@@ -182,26 +180,21 @@ public class Server {
             case "EUR":
                 account.addToEuroBalance(amount);
                 break;
-            case "YEN":
+            case "JPY":
                 account.addToYenBalance(amount);
                 break;
         }
     }
 
-    public void updateExchangeRates() {
-        exchangeRateLock.writeLock().lock();
-        try {
-            Map<String, Double> rates = exchangeRateService.fetchLatestRates();
-            exchangeRates.putAll(rates);
-        } finally {
-            exchangeRateLock.writeLock().unlock();
-        }
+    public Map<String, Double> getCurrencyExchangeRates(String currency){
+        loadExchangeRates();
+        return exchangeRates.getOrDefault(currency, new HashMap<>());
     }
 
-    public double getExchangeRate(String currencyPair) {
+    public double getExchangeRate(String fromCurrency, String toCurrency) {
         exchangeRateLock.readLock().lock();
         try {
-            return exchangeRates.getOrDefault(currencyPair, 1.0);
+            return exchangeRates.get(fromCurrency).getOrDefault(toCurrency, 1.0);
         } finally {
             exchangeRateLock.readLock().unlock();
         }

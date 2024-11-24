@@ -2,12 +2,13 @@ package client;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 public interface RmiMethodsInterface extends Remote {
     void getOutgoingTransferRequests() throws RemoteException;
     void getIncomingTransferRequests() throws RemoteException;
     String getCurrentUserInfo(String username) throws RemoteException;
-    void getCurrentExchangeRates() throws RemoteException;
+    Map<String, Double> getCurrentExchangeRates(String currency) throws RemoteException;
     String getOnlineUsers() throws RemoteException;
 
     void sendTransferRequest(String sender, String recipient, String currency, double amount) throws RemoteException;
