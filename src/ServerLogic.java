@@ -12,6 +12,8 @@ public class ServerLogic {
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
     private final Lock balanceLock = new ReentrantLock();
     private final ReadWriteLock exchangeRateLock = new ReentrantReadWriteLock();
+    private final String accountsFilePath = "src/bankAccounts.txt";
+
 
     public ServerLogic() {
         loadAccounts();
@@ -34,10 +36,10 @@ public class ServerLogic {
                     float yenBalance = Float.parseFloat(details[5]);
 
                     Account account = new Account(username, password);
-                    account.set_gbp_balance(gbpBalance);
-                    account.set_usd_balance(usdBalance);
-                    account.set_euro_balance(euroBalance);
-                    account.set_yen_balance(yenBalance);
+                    account.setGbp_balance(gbpBalance);
+                    account.setUsd_balance(usdBalance);
+                    account.setEuro_balance(euroBalance);
+                    account.setYen_balance(yenBalance);
 
                     accounts.put(username, account);
                 }
@@ -50,21 +52,21 @@ public class ServerLogic {
     }
 
     // Save accounts to file
-    public void saveAccounts() {
-        fileLock.writeLock().lock();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
-            for (Account account : accounts.values()) {
-                writer.write(account.getUsername() + "," + account.getPassword() + ","
-                        + account.getGbp_balance() + "," + account.getUsd_balance() + ","
-                        + account.getEuro_balance() + "," + account.getYen_balance());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            fileLock.writeLock().unlock();
-        }
-    }
+//    public void saveAccounts() {
+//        fileLock.writeLock().lock();
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
+//            for (Account account : accounts.values()) {
+//                writer.write(account.getUsername() + "," + account.getPassword() + ","
+//                        + account.getGbp_balance() + "," + account.getUsd_balance() + ","
+//                        + account.getEuro_balance() + "," + account.getYen_balance());
+//                writer.newLine();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            fileLock.writeLock().unlock();
+//        }
+//    }
 
     // Load exchange rates
     public synchronized void loadExchangeRates() {
@@ -86,11 +88,7 @@ public class ServerLogic {
         return accounts.putIfAbsent(username, new Account(username, password)) == null;
     }
 
-    public List<String> getOnlineUsers() {
-        synchronized (onlineUsers) {
-            return List.copyOf(onlineUsers);
-        }
-    }
+
 
     public List<String> getOutgoingRequests() {
         synchronized (exchangeRequests) {
@@ -116,16 +114,20 @@ public class ServerLogic {
         }
     }
 
-    public List<String> getAllUserInfo() {
+
+    public List<String> getAllUserInfo(String username) {
+        Account account = accounts.get(username);
         List<String> userInfo = new ArrayList<>();
-        for (Map.Entry<String, Account> entry : accounts.entrySet()) {
-            Account account = entry.getValue();
-            userInfo.add("User: " + entry.getKey() + ", GBP: " + account.getGbp_balance() +
-                    ", USD: " + account.getUsd_balance() + ", EUR: " + account.getEuro_balance() +
+        if (account != null) {
+            userInfo.add("User: " + username +
+                    ", GBP: " + account.getGbp_balance() +
+                    ", USD: " + account.getUsd_balance() +
+                    ", EUR: " + account.getEuro_balance() +
                     ", YEN: " + account.getYen_balance());
         }
         return userInfo;
     }
+
 
     public Map<String, Double> getExchangeRates() {
         exchangeRateLock.readLock().lock();
@@ -135,6 +137,7 @@ public class ServerLogic {
             exchangeRateLock.readLock().unlock();
         }
     }
+
 
     public void updateExchangeRates() {
         exchangeRateLock.writeLock().lock();
@@ -187,16 +190,16 @@ public class ServerLogic {
         }
     }
 
-    public void updateAccountBalance(String username, String currency, double amount) {
+    public void updateAccountBalance(String username, String currency, double amount) throws IOException {
         balanceLock.lock();
         try {
             Account account = accounts.get(username);
             if (account != null) {
                 switch (currency.toUpperCase()) {
-                    case "GBP" -> account.addToGbpBalance((float) amount);
-                    case "USD" -> account.addToUsdBalance((float) amount);
-                    case "EUR" -> account.addToEuroBalance((float) amount);
-                    case "YEN" -> account.addToYenBalance((float) amount);
+                    case "GBP" -> account.setGbp_balance((float) amount);
+                    case "USD" -> account.setUsd_balance((float) amount);
+                    case "EUR" -> account.setEuro_balance((float) amount);
+                    case "YEN" -> account.setYen_balance((float) amount);
                     default -> throw new IllegalArgumentException("Unsupported currency: " + currency);
                 }
                 saveAccounts();
@@ -208,10 +211,10 @@ public class ServerLogic {
 
     private void adjustBalance(Account account, String currency, float amount) {
         switch (currency.toUpperCase()) {
-            case "GBP" -> account.addToGbpBalance(amount);
-            case "USD" -> account.addToUsdBalance(amount);
-            case "EUR" -> account.addToEuroBalance(amount);
-            case "YEN" -> account.addToYenBalance(amount);
+            case "GBP" -> account.setGbp_balance(amount);
+            case "USD" -> account.setUsd_balance(amount);
+            case "EUR" -> account.setEuro_balance(amount);
+            case "YEN" -> account.setYen_balance(amount);
         }
     }
 
@@ -250,4 +253,92 @@ public class ServerLogic {
             balanceLock.unlock();
         }
     }
+
+
+
+    // Verify or Create Account
+    public boolean verifyAccount(String username, String password) throws IOException {
+        fileLock.writeLock().lock(); // Write lock for creating accounts
+        try {
+            // Check if account exists in memory
+            if (accounts.containsKey(username)) {
+                Account account = accounts.get(username);
+                return account.getPassword().equals(password);
+            }
+
+            // Load account from file if not in memory
+            File accountsFile = new File(accountsFilePath);
+            if (!accountsFile.exists()) {
+                accountsFile.createNewFile();
+            }
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(accountsFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] details = line.split(",");
+                    if (details.length >= 2 && details[0].equals(username)) {
+                        if (details[1].equals(password)) {
+                            // Load account into memory
+                            Account account = new Account(username, password);
+                            account.setGbp_balance(Float.parseFloat(details[2]));
+                            account.setUsd_balance(Float.parseFloat(details[3]));
+                            account.setEuro_balance(Float.parseFloat(details[4]));
+                            account.setYen_balance(Float.parseFloat(details[5]));
+                            accounts.put(username, account);
+                            return true;
+                        } else {
+                            return false; // Invalid password
+                        }
+                    }
+                }
+            }
+
+            // If account does not exist, create it
+            Account newAccount = new Account(username, password);
+            accounts.put(username, newAccount);
+            saveAccounts(); // Save the new account to the file
+            return true;
+        } finally {
+            fileLock.writeLock().unlock();
+        }
+    }
+
+    // Save Accounts to File
+    public void saveAccounts() {
+        fileLock.writeLock().lock();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(accountsFilePath))) {
+            for (Account account : accounts.values()) {
+                writer.write(account.getUsername() + "," + account.getPassword() + ","
+                        + account.getGbp_balance() + "," + account.getUsd_balance() + ","
+                        + account.getEuro_balance() + "," + account.getYen_balance());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            fileLock.writeLock().unlock();
+        }
+    }
+
+    // Add user to the online users list
+    public synchronized void addOnlineUser(String username) {
+        if (!onlineUsers.contains(username)) {
+            onlineUsers.add(username);
+        }
+    }
+
+    // Remove user from the online users list
+    public synchronized void removeOnlineUser(String username) {
+        onlineUsers.remove(username);
+    }
+
+    // Get the list of online users
+    public List<String> getOnlineUsers() {
+        synchronized (onlineUsers) {
+            return List.copyOf(onlineUsers);
+        }
+    }
+
+
+
 }

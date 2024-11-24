@@ -1,34 +1,15 @@
-import java.io.*;
-import java.util.Scanner;
+import java.io.Serializable;
 
-/** Stores account information such as user details and different currency balances **/
-
-public class Account {
-
-    private String username;
-    private String password;
+public class Account implements Serializable {
+    private final String username;
+    private final String password;
 
     private float gbp_balance;
     private float usd_balance;
     private float euro_balance;
     private float yen_balance;
 
-    public float getGbp_balance() {
-        return gbp_balance;
-    }
-
-    public float getUsd_balance() {
-        return usd_balance;
-    }
-
-    public float getEuro_balance() {
-        return euro_balance;
-    }
-
-    public float getYen_balance() {
-        return yen_balance;
-    }
-
+    // Constructor
     public Account(String username, String password) {
         this.username = username;
         this.password = password;
@@ -38,6 +19,7 @@ public class Account {
         this.yen_balance = 0;
     }
 
+    // Getters
     public synchronized String getUsername() {
         return username;
     }
@@ -46,77 +28,80 @@ public class Account {
         return password;
     }
 
-    public void set_gbp_balance(float gbp_balance) {
+    public synchronized float getGbp_balance() {
+        return gbp_balance;
+    }
+
+    public synchronized float getUsd_balance() {
+        return usd_balance;
+    }
+
+    public synchronized float getEuro_balance() {
+        return euro_balance;
+    }
+
+    public synchronized float getYen_balance() {
+        return yen_balance;
+    }
+
+    // Setters
+    public synchronized void setGbp_balance(float gbp_balance) {
         this.gbp_balance = gbp_balance;
     }
 
-    public void set_usd_balance(float usd_balance) {
+    public synchronized void setUsd_balance(float usd_balance) {
         this.usd_balance = usd_balance;
     }
 
-    public void set_euro_balance(float euro_balance) {
+    public synchronized void setEuro_balance(float euro_balance) {
         this.euro_balance = euro_balance;
     }
 
-    public void set_yen_balance(float yen_balance) {
+    public synchronized void setYen_balance(float yen_balance) {
         this.yen_balance = yen_balance;
     }
 
-    public void addToGbpBalance(float amount){
+    // Balance Modifiers
+    public synchronized void addToGbpBalance(float amount) {
         this.gbp_balance += amount;
     }
 
-    public void addToEuroBalance(float amount){
-        this.euro_balance += amount;
-    }
-
-    public void addToUsdBalance(float amount){
+    public synchronized void addToUsdBalance(float amount) {
         this.usd_balance += amount;
     }
 
-    public void addToYenBalance(float amount){
+    public synchronized void addToEuroBalance(float amount) {
+        this.euro_balance += amount;
+    }
+
+    public synchronized void addToYenBalance(float amount) {
         this.yen_balance += amount;
     }
 
-    public void decreaseGbpBalance(float amount){
+    public synchronized void decreaseGbpBalance(float amount) {
         this.gbp_balance -= amount;
     }
 
-    public void decreaseEuroBalance(float amount){
-        this.euro_balance -= amount;
-    }
-
-    public void decreaseUsdBalance(float amount){
+    public synchronized void decreaseUsdBalance(float amount) {
         this.usd_balance -= amount;
     }
 
-    public void decreaseYenBalance(float amount){
+    public synchronized void decreaseEuroBalance(float amount) {
+        this.euro_balance -= amount;
+    }
+
+    public synchronized void decreaseYenBalance(float amount) {
         this.yen_balance -= amount;
     }
 
-
-        public synchronized void verifyAccount(String username, String password) throws IOException {
-        File accounts = new File("src/bankAccounts.txt");
-        try (BufferedReader reader = new BufferedReader(new FileReader(accounts))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] details = line.split(",");
-                if (details[0].equals(username) && details[1].equals(password)) {
-                    System.out.println("Account verified for " + username);
-                    return;
-                }
-            }
-            System.out.println("Account not found. Creating new account...");
-            createAccount(username, password);
-        }
+    @Override
+    public synchronized String toString() {
+        return "Account{" +
+                "username='" + username + '\'' +
+                ", gbp_balance=" + gbp_balance +
+                ", usd_balance=" + usd_balance +
+                ", euro_balance=" + euro_balance +
+                ", yen_balance=" + yen_balance +
+                '}';
     }
-
-    public synchronized void createAccount(String username, String password) throws IOException {
-        File accounts = new File("src/bankAccounts.txt");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(accounts, true))) {
-            writer.write(username + "," + password + ",0,0,0,0");
-            writer.newLine();
-        }
-    }
-
 }

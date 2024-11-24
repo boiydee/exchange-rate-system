@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -8,7 +9,7 @@ public interface RmiMethodsInterface extends Remote {
 
     List<String> getIncomingTransferRequests(String username) throws RemoteException;
 
-    List<String> getCurrentUserInfo() throws RemoteException;
+    List<String> getCurrentUserInfo(String username) throws RemoteException;
 
     Map<String, Double> getCurrentExchangeRates() throws RemoteException;
 
@@ -20,5 +21,12 @@ public interface RmiMethodsInterface extends Remote {
 
     void sendNewAccountToServer(String username, String password) throws RemoteException;
 
-    void updateAccountBalance(String username, String currency, double amount) throws RemoteException;
+    void updateAccountBalance(String username, String currency, double amount) throws IOException;
+
+    boolean verifyAccount(String username, String password) throws RemoteException;
+
+    void addOnlineUser(String username) throws RemoteException;
+
+    void removeOnlineUser(String username) throws RemoteException;
+
 }

@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
@@ -22,9 +23,10 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
     }
 
     @Override
-    public List<String> getCurrentUserInfo() throws RemoteException {
-        return serverLogic.getAllUserInfo();
+    public List<String> getCurrentUserInfo(String username) throws RemoteException {
+        return serverLogic.getAllUserInfo(username);
     }
+
 
     @Override
     public Map<String, Double> getCurrentExchangeRates() throws RemoteException {
@@ -52,7 +54,29 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
     }
 
     @Override
-    public void updateAccountBalance(String username, String currency, double amount) throws RemoteException {
+    public void updateAccountBalance(String username, String currency, double amount) throws IOException {
         serverLogic.updateAccountBalance(username, currency, amount);
     }
+
+    @Override
+    public boolean verifyAccount(String username, String password) throws RemoteException {
+        try {
+            return serverLogic.verifyAccount(username, password);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public void addOnlineUser(String username) throws RemoteException {
+        serverLogic.addOnlineUser(username);
+    }
+
+    @Override
+    public void removeOnlineUser(String username) throws RemoteException {
+        serverLogic.removeOnlineUser(username);
+    }
+
+
 }

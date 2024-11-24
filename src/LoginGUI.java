@@ -1,10 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 
 public class LoginGUI extends JFrame {
-
     private boolean sessionActive = false;
 
     public LoginGUI(RmiMethodsInterface stub) {
@@ -24,16 +22,26 @@ public class LoginGUI extends JFrame {
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            if (true) { // Replace with actual login logic
-                sessionActive = true;
-                JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                new MainGUI(username, stub).setVisible(true);
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
+
+            try {
+                // Call the server to verify or create the account
+                boolean verified = stub.verifyAccount(username, password);
+
+                if (verified) {
+                    // Notify the server that this user is now online
+                    stub.addOnlineUser(username);
+
+                    sessionActive = true;
+                    JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    new MainGUI(username, stub).setVisible(true);
+                    this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Unable to verify account.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (RemoteException ex) {
+                JOptionPane.showMessageDialog(this, "Error connecting to server: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
 
         add(usernameLabel);
         add(usernameField);
@@ -45,5 +53,4 @@ public class LoginGUI extends JFrame {
     public boolean isSessionActive() {
         return sessionActive;
     }
-
 }
