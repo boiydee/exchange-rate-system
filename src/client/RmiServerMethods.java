@@ -17,8 +17,8 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
     }
 
     @Override
-    public List<String> getOutgoingTransferRequests() throws RemoteException {
-        return serverLogic.getOutgoingRequests();
+    public List<String> getOutgoingTransferRequests(String username) throws RemoteException {
+        return serverLogic.getOutgoingRequests(username);
     }
 
     @Override

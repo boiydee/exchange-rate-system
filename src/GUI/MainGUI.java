@@ -59,7 +59,7 @@ public class MainGUI extends JFrame {
     public void fetchOutgoingRequests() {
         try {
             // Call the server's method to get outgoing requests
-            List<String> outgoingRequests = serverStub.getOutgoingTransferRequests();
+            List<String> outgoingRequests = serverStub.getOutgoingTransferRequests(username);
 
             // Check if the list is empty
             if (outgoingRequests.isEmpty()) {

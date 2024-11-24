@@ -49,19 +49,17 @@ class ServerLogicTest {
 
     @Test
     void testGetOutgoingRequests() {
-        serverLogic.addTransferRequest("sender1", "recipient1", "USD", 100);
-        serverLogic.addTransferRequest("sender2", "recipient2", "GBP", 200);
 
-        List<String> outgoingRequests = serverLogic.getOutgoingRequests();
-        assertEquals(2, outgoingRequests.size(), "There should be two outgoing requests");
-        assertTrue(outgoingRequests.get(0).contains("USD"), "First request should involve USD");
+        List<String> sender1OutgoingRequests = serverLogic.getOutgoingRequests("sender1");
+        List<String> sender2OutgoingRequests = serverLogic.getOutgoingRequests("sender2");
+        assertEquals(1, sender1OutgoingRequests.size(), "There should be 1 outgoing request for sender 1");
+        assertEquals(1, sender2OutgoingRequests.size(), "There should be 1 outgoing request for sender 2");
+        assertTrue(sender1OutgoingRequests.get(0).contains("USD"), "First request should involve USD");
+        assertTrue(sender2OutgoingRequests.get(0).contains("GBP"), "First request should involve USD");
     }
 
     @Test
     void testGetIncomingRequests() {
-        serverLogic.addTransferRequest("sender1", "recipient1", "USD", 100);
-        serverLogic.addTransferRequest("sender2", "recipient2", "GBP", 200);
-
         List<String> incomingRequests = serverLogic.getIncomingRequests("recipient1");
         assertEquals(1, incomingRequests.size(), "There should be one incoming request for recipient1");
         assertTrue(incomingRequests.get(0).contains("USD"), "Request should involve USD");
@@ -70,11 +68,29 @@ class ServerLogicTest {
     @Test
     void testUpdateExchangeRates() {
         serverLogic.updateExchangeRates();
-        Map<String, Double> exchangeRates = serverLogic.getExchangeRates();
+        Map<String, Double> rates = serverLogic.getExchangeRates();
 
-        assertNotNull(exchangeRates, "Exchange rates should not be null");
-        assertTrue(exchangeRates.containsKey("GBP-USD"), "Exchange rates should include GBP-USD");
-        assertTrue(exchangeRates.containsKey("USD-GBP"), "Exchange rates should include USD-GBP");
+        assertNotNull(rates, "Exchange rates should not be null");
+
+        assertTrue(rates.containsKey("USD -> USD"), "Exchange rates should include USD -> USD");
+        assertTrue(rates.containsKey("USD -> GBP"), "Exchange rates should include USD -> GBP");
+        assertTrue(rates.containsKey("USD -> JPY"), "Exchange rates should include USD -> JPY");
+        assertTrue(rates.containsKey("USD -> EUR"), "Exchange rates should include USD -> EUR");
+
+        assertTrue(rates.containsKey("GBP -> USD"), "Exchange rates should include GBP -> USD");
+        assertTrue(rates.containsKey("GBP -> GBP"), "Exchange rates should include GBP -> GBP");
+        assertTrue(rates.containsKey("GBP -> JPY"), "Exchange rates should include GBP -> JPY");
+        assertTrue(rates.containsKey("GBP -> EUR"), "Exchange rates should include GBP -> EUR");
+
+        assertTrue(rates.containsKey("JPY -> USD"), "Exchange rates should include JPY -> USD");
+        assertTrue(rates.containsKey("JPY -> GBP"), "Exchange rates should include JPY -> GBP");
+        assertTrue(rates.containsKey("JPY -> JPY"), "Exchange rates should include JPY -> JPY");
+        assertTrue(rates.containsKey("JPY -> EUR"), "Exchange rates should include JPY -> EUR");
+
+        assertTrue(rates.containsKey("JPY -> USD"), "Exchange rates should include EUR -> USD");
+        assertTrue(rates.containsKey("JPY -> GBP"), "Exchange rates should include EUR -> GBP");
+        assertTrue(rates.containsKey("JPY -> JPY"), "Exchange rates should include EUR -> JPY");
+        assertTrue(rates.containsKey("JPY -> EUR"), "Exchange rates should include EUR -> EUR");
     }
 
     @Test

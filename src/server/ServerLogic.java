@@ -20,6 +20,7 @@ public class ServerLogic {
     private final Lock balanceLock = new ReentrantLock();
     private final ReadWriteLock exchangeRateLock = new ReentrantReadWriteLock();
     private final String accountsFilePath = "src/resources/bankAccounts.txt";
+    private final String exchangeRequetsFilePath = "src/resources/exchangeRequests.txt";
 
 
     public ServerLogic() {
@@ -58,23 +59,37 @@ public class ServerLogic {
         }
     }
 
-    // Save accounts to file
-//    public void saveAccounts() {
-//        fileLock.writeLock().lock();
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
-//            for (attributes.Account account : accounts.values()) {
-//                writer.write(account.getUsername() + "," + account.getPassword() + ","
-//                        + account.getGbp_balance() + "," + account.getUsd_balance() + ","
-//                        + account.getEuro_balance() + "," + account.getYen_balance());
-//                writer.newLine();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            fileLock.writeLock().unlock();
-//        }
-//    }
+    public void loadTransfers() {
+        fileLock.readLock().lock();
+        exchangeRequests.clear();
+        try (BufferedReader reader = new BufferedReader(new FileReader(exchangeRequetsFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] details = line.split(",");
+                if (details.length >= 6) {
+                    String originAccount = details[0];
+                    String destinationAccount = details[1];
+                    String currency = details[2];
+                    float amount = Float.parseFloat(details[3]);
+                    TransactionState state =
+                            switch (details[4]) {
+                                case "CANCELLED" -> TransactionState.CANCELLED;
+                                case "PENDING" -> TransactionState.PENDING;
+                                case "ACCEPTED" -> TransactionState.ACCEPTED;
+                                default -> throw new IllegalStateException("Unexpected value: " + details[4]);
+                            };
+                    String id = details[5];
 
+                    ExchangeRequest eRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, state, id);
+                    exchangeRequests.add(eRequest);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            fileLock.readLock().unlock();
+        }
+    }
 
     public boolean createAccount(String username, String password) {
         return accounts.putIfAbsent(username, new Account(username, password)) == null;
@@ -86,11 +101,12 @@ public class ServerLogic {
     }
 
 
-    public List<String> getOutgoingRequests() {
+    public List<String> getOutgoingRequests(String username) {
+        loadTransfers();
         synchronized (exchangeRequests) {
             List<String> outgoing = new ArrayList<>();
             for (ExchangeRequest request : exchangeRequests) {
-                if (request.getState() == TransactionState.PENDING) {
+                if (request.getOriginAccount().equals(username) && request.getState() == TransactionState.PENDING) {
                     outgoing.add(request.toString());
                 }
             }
@@ -99,6 +115,7 @@ public class ServerLogic {
     }
 
     public List<String> getIncomingRequests(String username) {
+        loadTransfers();
         synchronized (exchangeRequests) {
             List<String> incoming = new ArrayList<>();
             for (ExchangeRequest request : exchangeRequests) {
@@ -199,6 +216,7 @@ public class ServerLogic {
     public void addTransferRequest(String sender, String recipient, String currency, double amount) {
         synchronized (exchangeRequests) {
             exchangeRequests.add(new ExchangeRequest(sender, recipient, currency, amount, TransactionState.PENDING));
+            saveTransferRequests();
         }
     }
 
@@ -219,7 +237,7 @@ public class ServerLogic {
         }
     }
 
-    public void updateAccountBalance(String username, String currency, double amount)  {
+    public void updateAccountBalance(String username, String currency, double amount) {
         balanceLock.lock();
         try {
             Account account = accounts.get(username);
@@ -342,6 +360,22 @@ public class ServerLogic {
                 writer.write(account.getUsername() + "," + account.getPassword() + ","
                         + account.getGbp_balance() + "," + account.getUsd_balance() + ","
                         + account.getEuro_balance() + "," + account.getYen_balance());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            fileLock.writeLock().unlock();
+        }
+    }
+
+    public void saveTransferRequests() {
+        fileLock.writeLock().lock();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(exchangeRequetsFilePath))) {
+            for (ExchangeRequest request : exchangeRequests) {
+                writer.write(request.getOriginAccount() + "," + request.getDestinationAccount() + ","
+                        + request.getCurrency() + "," + request.getAmount() + ","
+                        + request.getState().getDescription() + "," + request.getId());
                 writer.newLine();
             }
         } catch (IOException e) {
