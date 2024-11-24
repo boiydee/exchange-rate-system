@@ -6,7 +6,7 @@ public class Client {
         SwingUtilities.invokeLater(() -> {
             try {
                 RmiMethodsInterface stub = (RmiMethodsInterface) Naming.lookup("rmi://127.0.0.1/RmiServer");
-                new LoginGUI().setVisible(true);
+                new LoginGUI(stub).setVisible(true);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Error connecting to server: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }

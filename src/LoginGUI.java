@@ -1,9 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 
 public class LoginGUI extends JFrame {
-    public LoginGUI() {
+
+    private boolean sessionActive = false;
+
+    public LoginGUI(RmiMethodsInterface stub) {
         setTitle("Login");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -20,19 +24,16 @@ public class LoginGUI extends JFrame {
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            try {
-                RmiMethodsInterface stub = (RmiMethodsInterface) Naming.lookup("rmi://127.0.0.1/RmiServer");
-                if (true) { // Replace with real login check
-                    JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    new MainGUI(username, stub).setVisible(true);
-                    this.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error connecting to server: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            if (true) { // Replace with actual login logic
+                sessionActive = true;
+                JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                new MainGUI(username, stub).setVisible(true);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+
 
         add(usernameLabel);
         add(usernameField);
@@ -41,7 +42,8 @@ public class LoginGUI extends JFrame {
         add(loginButton);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginGUI().setVisible(true));
+    public boolean isSessionActive() {
+        return sessionActive;
     }
+
 }

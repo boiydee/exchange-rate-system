@@ -1,14 +1,24 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
 
 public interface RmiMethodsInterface extends Remote {
-    void getOutgoingTransferRequests() throws RemoteException;
-    void getIncomingTransferRequests(String username) throws RemoteException;
-    void getCurrentUserInfo() throws RemoteException;
-    void getCurrentExchangeRates() throws RemoteException;
-    void getOnlineUsers() throws RemoteException;
+    List<String> getOutgoingTransferRequests() throws RemoteException;
 
-    void sendTransferRequest() throws RemoteException;
-    void sendTransferRequestResponse() throws RemoteException;
-    void sendNewAccountToServer() throws RemoteException;
+    List<String> getIncomingTransferRequests(String username) throws RemoteException;
+
+    List<String> getCurrentUserInfo() throws RemoteException;
+
+    Map<String, Double> getCurrentExchangeRates() throws RemoteException;
+
+    List<String> getOnlineUsers() throws RemoteException;
+
+    void sendTransferRequest(String sender, String recipient, String currency, double amount) throws RemoteException;
+
+    void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException;
+
+    void sendNewAccountToServer(String username, String password) throws RemoteException;
+
+    void updateAccountBalance(String username, String currency, double amount) throws RemoteException;
 }

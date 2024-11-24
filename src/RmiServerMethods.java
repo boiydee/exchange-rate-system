@@ -1,58 +1,58 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
+import java.util.Map;
 
 public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsInterface {
-    private final Server server;
+    private final ServerLogic serverLogic;
 
-    public RmiServerMethods(Server server) throws RemoteException {
+    public RmiServerMethods(ServerLogic serverLogic) throws RemoteException {
         super();
-        this.server = server;
+        this.serverLogic = serverLogic;
     }
 
     @Override
-    public void getOutgoingTransferRequests() throws RemoteException {
-        System.out.println("Fetching outgoing transfer requests...");
-        // Add logic for outgoing requests
+    public List<String> getOutgoingTransferRequests() throws RemoteException {
+        return serverLogic.getOutgoingRequests();
     }
 
     @Override
-    public void getIncomingTransferRequests(String username) throws RemoteException {
-        List<ExchangeRequest> incomingRequests = server.getExchangeRequests(username);
-        for (ExchangeRequest request : incomingRequests) {
-            System.out.println(request);
-        }
-    }
-
-
-    @Override
-    public void getCurrentUserInfo() throws RemoteException {
-        System.out.println("Fetching current user info...");
+    public List<String> getIncomingTransferRequests(String username) throws RemoteException {
+        return serverLogic.getIncomingRequests(username);
     }
 
     @Override
-    public void getCurrentExchangeRates() throws RemoteException {
-        System.out.println("Fetching exchange rates...");
-        server.updateExchangeRates();
+    public List<String> getCurrentUserInfo() throws RemoteException {
+        return serverLogic.getAllUserInfo();
     }
 
     @Override
-    public void getOnlineUsers() throws RemoteException {
-        System.out.println("Fetching online users: " + server.getOnlineUsers());
+    public Map<String, Double> getCurrentExchangeRates() throws RemoteException {
+        return serverLogic.getExchangeRates();
     }
 
     @Override
-    public void sendTransferRequest() throws RemoteException {
-        System.out.println("Sending transfer request...");
+    public List<String> getOnlineUsers() throws RemoteException {
+        return serverLogic.getOnlineUsers();
     }
 
     @Override
-    public void sendTransferRequestResponse() throws RemoteException {
-        System.out.println("Responding to transfer request...");
+    public void sendTransferRequest(String sender, String recipient, String currency, double amount) throws RemoteException {
+        serverLogic.addTransferRequest(sender, recipient, currency, amount);
     }
 
     @Override
-    public void sendNewAccountToServer() throws RemoteException {
-        System.out.println("Creating new account on the server...");
+    public void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException {
+        serverLogic.processTransferRequest(requestId, accepted);
+    }
+
+    @Override
+    public void sendNewAccountToServer(String username, String password) throws RemoteException {
+        serverLogic.createAccount(username, password);
+    }
+
+    @Override
+    public void updateAccountBalance(String username, String currency, double amount) throws RemoteException {
+        serverLogic.updateAccountBalance(username, currency, amount);
     }
 }
