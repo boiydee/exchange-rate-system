@@ -32,13 +32,13 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
         double gbp = balances.get("GBP");
         double usd = balances.get("USD");
         double eur = balances.get("EUR");
-        double yen = balances.get("YEN");
-        return String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nYEN: ¥%.2f\n", username, gbp, usd, eur, yen);
+        double yen = balances.get("JPY");
+        return String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", username, gbp, usd, eur, yen);
     }
 
     @Override
-    public void getCurrentExchangeRates() {
-        server.updateExchangeRates();
+    public Map<String, Double> getCurrentExchangeRates(String currency) {
+        return server.getCurrencyExchangeRates(currency);
     }
 
     @Override
