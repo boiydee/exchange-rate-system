@@ -121,6 +121,7 @@ public class ServerLogic {
     }
 
 
+
     public Map<String, Double> getExchangeRates() {
         exchangeRateLock.readLock().lock();
         try {
@@ -229,12 +230,13 @@ public class ServerLogic {
 
     private void adjustBalance(Account account, String currency, float amount) {
         switch (currency.toUpperCase()) {
-            case "GBP" -> account.setGbp_balance(amount);
-            case "USD" -> account.setUsd_balance(amount);
-            case "EUR" -> account.setEuro_balance(amount);
-            case "YEN" -> account.setYen_balance(amount);
+            case "GBP" -> account.setGbp_balance(account.getGbp_balance() + amount);
+            case "USD" -> account.setUsd_balance(account.getUsd_balance() + amount);
+            case "EUR" -> account.setEuro_balance(account.getEuro_balance() + amount);
+            case "YEN" -> account.setYen_balance(account.getYen_balance() + amount);
         }
     }
+
 
     private boolean hasSufficientFunds(Account account, String currency, float amount) {
         return switch (currency.toUpperCase()) {
@@ -260,17 +262,20 @@ public class ServerLogic {
         try {
             Account fromAccount = accounts.get(fromUser);
             Account toAccount = accounts.get(toUser);
+
+            // Validate both accounts exist and sufficient funds are available
             if (fromAccount != null && toAccount != null && hasSufficientFunds(fromAccount, currencyType, amount)) {
-                adjustBalance(fromAccount, currencyType, -amount);
-                adjustBalance(toAccount, currencyType, amount);
-                saveAccounts();
+                adjustBalance(fromAccount, currencyType, -amount); // Deduct from sender
+                adjustBalance(toAccount, currencyType, amount);    // Add to recipient
+                saveAccounts(); // Persist changes
                 return true;
             }
-            return false;
+            return false; // Transfer fails if accounts are invalid or insufficient funds
         } finally {
             balanceLock.unlock();
         }
     }
+
 
 
 

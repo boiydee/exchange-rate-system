@@ -6,27 +6,62 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class AccountTest {
 
-    Account testAcc = new Account("user", "123", 15.0, 14.0, 7.0, 8.0);
+    Account testAcc = new Account("user", "123");
 
-    // Tests increment of funds to balance
+    // Tests increment of funds to USD balance
     @Test
     public void testIncrementUsdBalance() {
-        testAcc.addToUsdBalance(5.0);
-        assertEquals(19.0, testAcc.getUsdBalance());
+        testAcc.addToUsdBalance(5.0f);
+        assertEquals(5.0f, testAcc.getUsd_balance(), "USD balance should increment correctly");
     }
 
-    // Tests decrement of funds from balance
+    // Tests decrement of funds from Yen balance
     @Test
     public void testDecrementYenBalance() {
-        testAcc.decreaseYenBalance(8);
-        assertEquals(0.0, testAcc.getYenBalance());
+        testAcc.setYen_balance(8.0f); // Initialize with 8
+        testAcc.decreaseYenBalance(8.0f);
+        assertEquals(0.0f, testAcc.getYen_balance(), "YEN balance should decrement correctly");
     }
 
-    // Will check that amount shouldn't decrease as amount is greater than the actual number of funds
+    // Tests that GBP balance should not fall below 0
     @Test
-    public void testDecrementBalanceNotFallUnder0(){
-        testAcc.decreaseGbpBalance(16.0);
-        assertEquals(15.0, testAcc.getGbpBalance());
+    public void testDecrementBalanceNotFallUnder0() {
+        testAcc.setGbp_balance(15.0f); // Initialize with 15
+        testAcc.decreaseGbpBalance(16.0f);
+        assertEquals(15.0f, testAcc.getGbp_balance(), "GBP balance should not decrease when funds are insufficient");
     }
 
+    // Tests increment of funds to GBP balance
+    @Test
+    public void testIncrementGbpBalance() {
+        testAcc.addToGbpBalance(10.0f);
+        assertEquals(10.0f, testAcc.getGbp_balance(), "GBP balance should increment correctly");
+    }
+
+    // Tests that balances for all currencies are initialized to 0
+    @Test
+    public void testBalancesInitializedToZero() {
+        assertEquals(0.0f, testAcc.getGbp_balance(), "GBP balance should initialize to 0");
+        assertEquals(0.0f, testAcc.getUsd_balance(), "USD balance should initialize to 0");
+        assertEquals(0.0f, testAcc.getEuro_balance(), "EUR balance should initialize to 0");
+        assertEquals(0.0f, testAcc.getYen_balance(), "YEN balance should initialize to 0");
+    }
+
+    // Tests the toString method
+    @Test
+    public void testToString() {
+        testAcc.setGbp_balance(15.0f);
+        testAcc.setUsd_balance(10.0f);
+        testAcc.setEuro_balance(5.0f);
+        testAcc.setYen_balance(20.0f);
+
+        String expected = "attributes.Account{" +
+                "username='user', " +
+                "gbp_balance=15.0, " +
+                "usd_balance=10.0, " +
+                "euro_balance=5.0, " +
+                "yen_balance=20.0" +
+                "}";
+        assertEquals(expected, testAcc.toString(), "toString method should return the correct representation of the account");
+    }
 }

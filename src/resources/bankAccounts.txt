@@ -1,3 +1,8 @@
+user1,pass1,0.0,50.0,0.0,0.0
+user2,pass2,0.0,150.0,0.0,0.0
+test2,test2,231.0,0.0,0.0,0.0
+concurrentUser,concurrentPass,12.5339985,-10.0,0.0,0.0
 test,test,0.0,0.0,0.0,0.0
-test2,test2,231,0.0,0.0,0.0,0.0
+verifyUser,verifyPass,0.0,0.0,0.0,0.0
+testUser,testPass,62.66999,-50.0,0.0,0.0
 test1,test1,0.0,0.0,0.0,0.0

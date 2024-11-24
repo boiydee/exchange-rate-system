@@ -81,20 +81,30 @@ public class Account implements Serializable {
     }
 
     public synchronized void decreaseGbpBalance(float amount) {
-        this.gbp_balance -= amount;
+        if (this.gbp_balance >= amount) {
+            this.gbp_balance -= amount;
+        }
     }
 
+
     public synchronized void decreaseUsdBalance(float amount) {
-        this.usd_balance -= amount;
+        if (this.usd_balance >= amount) {
+            this.usd_balance -= amount;
+        }
     }
 
     public synchronized void decreaseEuroBalance(float amount) {
-        this.euro_balance -= amount;
+        if (this.euro_balance >= amount) {
+            this.euro_balance -= amount;
+        }
     }
 
     public synchronized void decreaseYenBalance(float amount) {
-        this.yen_balance -= amount;
+        if (this.yen_balance >= amount) {
+            this.yen_balance -= amount;
+        }
     }
+
 
     @Override
     public synchronized String toString() {
