@@ -1,8 +1,5 @@
 package attributes;
 
-import java.io.*;
-import java.util.Scanner;
-
 /** Stores account information such as user details and different currency balances **/
 
 public class Account {
@@ -33,6 +30,8 @@ public class Account {
         this.yenBalance = yenBalance;
     }
 
+    // getters and setters for retrieving balance amounts and altering the number of funds
+    // check is put in place for setters to ensure users can't take out more money than their current balance
     public double getGbpBalance() {
         return this.gbpBalance;
     }
@@ -82,69 +81,39 @@ public class Account {
     }
 
     public void decreaseGbpBalance(double amount){
-        this.gbpBalance -= amount;
+        if (amount <= this.gbpBalance){
+            this.gbpBalance -= amount;
+        }
+        else {
+            System.err.println("Not enough funds in this account to complete this action.");
+        }
     }
 
     public void decreaseEuroBalance(double amount){
-        this.euroBalance -= amount;
+        if (amount <= this.euroBalance){
+            this.euroBalance -= amount;
+        }
+        else {
+            System.err.println("Not enough funds in this account to complete this action.");
+        }
     }
 
     public void decreaseUsdBalance(double amount){
-        this.usdBalance -= amount;
+        if (amount <= this.usdBalance){
+            this.usdBalance -= amount;
+        }
+        else {
+            System.err.println("Not enough funds in this account to complete this action.");
+        }
     }
 
     public void decreaseYenBalance(double amount){
-        this.yenBalance -= amount;
-    }
-
-    // This method needs to use the accounts stored on server - using a regular file right now for testing purposes
-    public void verifyAccount(String username, String password) throws IOException {
-        File accounts = new File("src/resources/bankAccounts.txt");
-        try (BufferedReader reader = new BufferedReader(new FileReader(accounts))) {
-            String[] details = reader.readLine().split(",");
-            String user = details[0];
-            String pass = details[1];
-
-            if (user.equals(username) && pass.equals(password)) {
-                System.out.println("Your account has been verified - Welcome " + username + "!");
-            } else if ((user.equals(username) && !pass.equals(password)) || (!user.equals(username) && pass.equals(password))) {
-                System.out.println("One or more details are incorrect. Please try again.");
-                // replace with call to menu option
-            } else {
-                System.out.println("attirbutes.Account doesn't appear to exist - creating new one...");
-                createAccount(username, password);
-            }
-
-        } catch (IOException e){
-            System.err.println("Exception caught: " + e.getMessage());
+        if (amount <= this.yenBalance){
+            this.yenBalance -= amount;
+        }
+        else {
+            System.err.println("Not enough funds in this account to complete this action.");
         }
     }
 
-    public void createAccount(String username, String password) throws IOException {
-        File accounts = new File("src/resources/bankAccounts.txt");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(accounts, true))){
-            writer.write(username + "," + password + "," + getGbpBalance() + "," + getUsdBalance() + "," + getEuroBalance() + "," + getYenBalance());
-            writer.newLine();
-        }
-        catch (IOException e){
-            System.err.println("Exception caught: " + e.getMessage());
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
-        Scanner input = new Scanner(System.in);
-
-        System.out.println("Please enter your account username: ");
-        String user = input.nextLine();
-
-        System.out.println("Please enter your account password: ");
-        String pass = input.nextLine();
-
-        Account account = new Account(user, pass, 5.0, 14.0, 0.0, 16);
-
-        account.verifyAccount(user, pass);
-
-    }
-
-    // TODO: Update balance methods (unless already handled in another class)
 }
