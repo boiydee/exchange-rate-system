@@ -80,6 +80,10 @@ public class ServerLogic {
         return accounts.putIfAbsent(username, new Account(username, password)) == null;
     }
 
+    // Mainly for Testing
+    public Map<String, Account> getAccounts() {
+        return accounts;
+    }
 
 
     public List<String> getOutgoingRequests() {
@@ -111,15 +115,11 @@ public class ServerLogic {
         Account account = accounts.get(username);
         List<String> userInfo = new ArrayList<>();
         if (account != null) {
-            userInfo.add("User: " + username +
-                    ", GBP: " + account.getGbp_balance() +
-                    ", USD: " + account.getUsd_balance() +
-                    ", EUR: " + account.getEuro_balance() +
-                    ", YEN: " + account.getYen_balance());
+            String formattedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", "test", account.getGbp_balance(), account.getUsd_balance(), account.getEuro_balance(), account.getYen_balance());
+            userInfo.add(formattedInfo);
         }
         return userInfo;
     }
-
 
 
     public Map<String, Double> getExchangeRates() {
@@ -135,17 +135,27 @@ public class ServerLogic {
     // Load exchange rates from the live service
     public synchronized void loadExchangeRates() {
         System.out.println("Fetching exchange rates from ExchangeRateService...");
-        Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
         exchangeRates.clear();
-        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
-            String currency = entry.getKey();
-            Double rate = entry.getValue();
-            exchangeRates.put(currency + "-USD", rate);
-            if (!currency.equals("USD")) {
-                exchangeRates.put("USD-" + currency, 1 / rate);
-            }
+        Map<String, Double> usdlatestRates = exchangeRateService.getConvertionRates("USD");
+        Map<String, Double> eurlatestRates = exchangeRateService.getConvertionRates("EUR");
+        Map<String, Double> yenlatestRates = exchangeRateService.getConvertionRates("JPY");
+        Map<String, Double> gbplatestRates = exchangeRateService.getConvertionRates("GBP");
+
+        for (Map.Entry<String, Double> entry : eurlatestRates.entrySet()) {
+            exchangeRates.put("EUR -> " + entry.getKey(), entry.getValue());
         }
-        System.out.println("Exchange rates loaded: " + exchangeRates);
+
+        for (Map.Entry<String, Double> entry : usdlatestRates.entrySet()) {
+            exchangeRates.put("USD -> " + entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, Double> entry : yenlatestRates.entrySet()) {
+            exchangeRates.put("JPY -> " + entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, Double> entry : gbplatestRates.entrySet()) {
+            exchangeRates.put("GBP -> " + entry.getKey(), entry.getValue());
+        }
     }
 
     // Update exchange rates dynamically
@@ -209,7 +219,7 @@ public class ServerLogic {
         }
     }
 
-    public void updateAccountBalance(String username, String currency, double amount) throws IOException {
+    public void updateAccountBalance(String username, String currency, double amount)  {
         balanceLock.lock();
         try {
             Account account = accounts.get(username);
@@ -275,8 +285,6 @@ public class ServerLogic {
             balanceLock.unlock();
         }
     }
-
-
 
 
     // Verify or Create attributes.Account
@@ -361,7 +369,4 @@ public class ServerLogic {
             return List.copyOf(onlineUsers);
         }
     }
-
-
-
 }
