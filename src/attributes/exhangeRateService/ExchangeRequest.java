@@ -23,6 +23,15 @@ public class ExchangeRequest {
         this.state = state;
     }
 
+    public ExchangeRequest(String originAccount, String destinationAccount, String currency, double amount, TransactionState state, String id) {
+        this.id = id; // Generate a unique ID
+        this.originAccount = originAccount;
+        this.destinationAccount = destinationAccount;
+        this.currency = currency;
+        this.amount = amount;
+        this.state = state;
+    }
+
     public String getId() {
         return id;
     }

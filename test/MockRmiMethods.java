@@ -23,8 +23,8 @@ public class MockRmiMethods implements RmiMethodsInterface {
     }
 
     @Override
-    public List<String> getOutgoingTransferRequests() throws RemoteException {
-        return userRequests.getOrDefault("testUser", Collections.emptyList());
+    public List<String> getOutgoingTransferRequests(String username) throws RemoteException {
+        return userRequests.getOrDefault(username, Collections.emptyList());
     }
 
     @Override

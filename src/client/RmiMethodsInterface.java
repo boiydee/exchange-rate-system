@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface RmiMethodsInterface extends Remote {
-    List<String> getOutgoingTransferRequests() throws RemoteException;
+    List<String> getOutgoingTransferRequests(String username) throws RemoteException;
 
     List<String> getIncomingTransferRequests(String username) throws RemoteException;
 
