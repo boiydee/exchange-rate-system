@@ -1,3 +1,9 @@
+package client;
+
+import GUI.LoginGUI;
+import client.RmiMethodsInterface;
+import server.ServerLogic;
+
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
@@ -15,7 +21,7 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             // Notify the server about the new connection
-            System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
+            System.out.println("client.Client connected: " + clientSocket.getRemoteSocketAddress());
 
             // Launch the Login GUI
             LoginGUI loginGUI = new LoginGUI(rmiServer);
@@ -24,11 +30,9 @@ public class ClientHandler implements Runnable {
             // Wait for the session to start and keep active
             while (true) {
                 if (!loginGUI.isSessionActive()) {
-                    System.out.println("Client disconnected: " + clientSocket.getRemoteSocketAddress());
+                    System.out.println("client.Client disconnected: " + clientSocket.getRemoteSocketAddress());
                     break;
                 }
-                // Monitor for backend updates or handle additional server-side tasks if needed
-                handleBackendUpdates();
             }
 
         } catch (Exception e) {
@@ -41,14 +45,5 @@ public class ClientHandler implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
-
-    /**
-     * This method can be used to handle backend-triggered updates.
-     * For example, notifying the GUI about balance changes or exchange rate updates.
-     */
-    private void handleBackendUpdates() {
-        // Example: Future logic for server-to-GUI notifications
-        // This could be implemented using listeners or periodic checks
     }
 }

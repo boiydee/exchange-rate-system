@@ -1,3 +1,7 @@
+package GUI;
+
+import client.RmiMethodsInterface;
+
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.RemoteException;

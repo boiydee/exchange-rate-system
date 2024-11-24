@@ -3,6 +3,9 @@ package server;
 import attributes.Account;
 import attributes.exhangeRateService.ExchangeRateService;
 import attributes.exhangeRateService.ExchangeRequest;
+import client.ClientHandler;
+import client.RmiMethodsInterface;
+import client.RmiServerMethods;
 
 import java.io.*;
 import java.io.IOException;
@@ -19,7 +22,7 @@ public class Server {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE); // Thread pool
 
     public static void main(String[] args) {
-        // Create and initialize ServerLogic
+        // Create and initialize server.ServerLogic
         ServerLogic serverLogic = new ServerLogic();
 
         try {
@@ -45,7 +48,7 @@ public class Server {
             while (true) {
                 // Accept a new client connection
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
+                System.out.println("client.Client connected: " + clientSocket.getRemoteSocketAddress());
 
                 // Handle the client in a separate thread
                 threadPool.execute(new ClientHandler(clientSocket, serverLogic, rmiServer));

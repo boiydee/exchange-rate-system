@@ -1,3 +1,8 @@
+package GUI;
+
+import attributes.cmdLineUI.MenuOptions;
+import client.RmiMethodsInterface;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -44,7 +49,7 @@ public class MainGUI extends JFrame {
                 case GETCURRENTEXCHANGERATES -> fetchExchangeRates();
                 case GETONLINEUSERS -> fetchOnlineUsers();
                 case SENDTRANSFERREQUESTS -> sendTransferRequest();
-                case SENDNEWACCOUNTTOSERVER -> sendNewAccountToServer();
+                //case SENDNEWACCOUNTTOSERVER -> sendNewAccountToServer();
                 case EXIT -> logout();
                 default -> JOptionPane.showMessageDialog(MainGUI.this, "Unknown option selected.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -131,14 +136,14 @@ public class MainGUI extends JFrame {
                 );
             } else {
                 // Display the account info in a formatted string
-                StringBuilder info = new StringBuilder("Account Info:\n");
+                StringBuilder info = new StringBuilder("attributes.Account Info:\n");
                 for (String detail : accountInfo) {
                     info.append(detail).append("\n");
                 }
                 JOptionPane.showMessageDialog(
                         this,
                         info.toString(),
-                        "Account Information",
+                        "attributes.Account Information",
                         JOptionPane.INFORMATION_MESSAGE
                 );
             }
@@ -261,31 +266,31 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void sendNewAccountToServer() {
-        try {
-            // Prompt for the new account username
-            String newUsername = JOptionPane.showInputDialog(this, "Enter new account username:");
-            if (newUsername == null || newUsername.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Prompt for the new account password
-            String newPassword = JOptionPane.showInputDialog(this, "Enter new account password:");
-            if (newPassword == null || newPassword.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Password cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Send the new account details to the server
-            serverStub.sendNewAccountToServer(newUsername, newPassword);
-
-            JOptionPane.showMessageDialog(this, "New account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (RemoteException e) {
-            // Show an error message if the server call fails
-            showError(e);
-        }
-    }
+//    private void sendNewAccountToServer() {
+//        try {
+//            // Prompt for the new account username
+//            String newUsername = JOptionPane.showInputDialog(this, "Enter new account username:");
+//            if (newUsername == null || newUsername.isEmpty()) {
+//                JOptionPane.showMessageDialog(this, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            // Prompt for the new account password
+//            String newPassword = JOptionPane.showInputDialog(this, "Enter new account password:");
+//            if (newPassword == null || newPassword.isEmpty()) {
+//                JOptionPane.showMessageDialog(this, "Password cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            // Send the new account details to the server
+//            serverStub.sendNewAccountToServer(newUsername, newPassword);
+//
+//            JOptionPane.showMessageDialog(this, "New account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//        } catch (RemoteException e) {
+//            // Show an error message if the server call fails
+//            showError(e);
+//        }
+//    }
 
 
     private void logout() {

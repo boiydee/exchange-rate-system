@@ -1,3 +1,10 @@
+package server;
+
+import attributes.Account;
+import attributes.TransactionState;
+import attributes.exhangeRateService.ExchangeRateService;
+import attributes.exhangeRateService.ExchangeRequest;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -12,7 +19,7 @@ public class ServerLogic {
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
     private final Lock balanceLock = new ReentrantLock();
     private final ReadWriteLock exchangeRateLock = new ReentrantReadWriteLock();
-    private final String accountsFilePath = "src/bankAccounts.txt";
+    private final String accountsFilePath = "src/resources/bankAccounts.txt";
 
 
     public ServerLogic() {
@@ -23,7 +30,7 @@ public class ServerLogic {
     // Load accounts from file
     public void loadAccounts() {
         fileLock.readLock().lock();
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/bankAccounts.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/resources/bankAccounts.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] details = line.split(",");
@@ -55,7 +62,7 @@ public class ServerLogic {
 //    public void saveAccounts() {
 //        fileLock.writeLock().lock();
 //        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/bankAccounts.txt"))) {
-//            for (Account account : accounts.values()) {
+//            for (attributes.Account account : accounts.values()) {
 //                writer.write(account.getUsername() + "," + account.getPassword() + ","
 //                        + account.getGbp_balance() + "," + account.getUsd_balance() + ","
 //                        + account.getEuro_balance() + "," + account.getYen_balance());
@@ -68,21 +75,6 @@ public class ServerLogic {
 //        }
 //    }
 
-    // Load exchange rates
-    public synchronized void loadExchangeRates() {
-        System.out.println("Fetching exchange rates from ExchangeRateService...");
-        Map<String, Double> latestRates = exchangeRateService.fetchLatestRates();
-        exchangeRates.clear();
-        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
-            String currency = entry.getKey();
-            Double rate = entry.getValue();
-            exchangeRates.put(currency + "-USD", rate);
-            if (!currency.equals("USD")) {
-                exchangeRates.put("USD-" + currency, 1 / rate);
-            }
-        }
-        System.out.println("Exchange rates updated: " + exchangeRates);
-    }
 
     public boolean createAccount(String username, String password) {
         return accounts.putIfAbsent(username, new Account(username, password)) == null;
@@ -139,16 +131,42 @@ public class ServerLogic {
     }
 
 
+    // Load exchange rates from the live service
+    public synchronized void loadExchangeRates() {
+        System.out.println("Fetching exchange rates from ExchangeRateService...");
+        Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
+        exchangeRates.clear();
+        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
+            String currency = entry.getKey();
+            Double rate = entry.getValue();
+            exchangeRates.put(currency + "-USD", rate);
+            if (!currency.equals("USD")) {
+                exchangeRates.put("USD-" + currency, 1 / rate);
+            }
+        }
+        System.out.println("Exchange rates loaded: " + exchangeRates);
+    }
+
+    // Update exchange rates dynamically
     public void updateExchangeRates() {
         exchangeRateLock.writeLock().lock();
         try {
-            Map<String, Double> latestRates = exchangeRateService.fetchLatestRates();
-            exchangeRates.putAll(latestRates);
-            System.out.println("Exchange rates updated: " + latestRates);
+            System.out.println("Updating exchange rates...");
+            Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
+            for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
+                String currency = entry.getKey();
+                Double rate = entry.getValue();
+                exchangeRates.put(currency + "-USD", rate);
+                if (!currency.equals("USD")) {
+                    exchangeRates.put("USD-" + currency, 1 / rate);
+                }
+            }
+            System.out.println("Exchange rates updated: " + exchangeRates);
         } finally {
             exchangeRateLock.writeLock().unlock();
         }
     }
+
 
     public boolean transferWithinAccount(String username, String fromCurrency, String toCurrency, float amount) {
         balanceLock.lock();
@@ -256,7 +274,7 @@ public class ServerLogic {
 
 
 
-    // Verify or Create Account
+    // Verify or Create attributes.Account
     public boolean verifyAccount(String username, String password) throws IOException {
         fileLock.writeLock().lock(); // Write lock for creating accounts
         try {

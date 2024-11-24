@@ -1,76 +1,86 @@
 package client;
 
+import server.ServerLogic;
+
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 import java.util.Map;
 
-import server.Server;
-
 public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsInterface {
-    private final Server server;
+    private final ServerLogic serverLogic;
 
-    public RmiServerMethods(Server server) throws RemoteException {
+    public RmiServerMethods(ServerLogic serverLogic) throws RemoteException {
         super();
-        this.server = server;
+        this.serverLogic = serverLogic;
     }
 
     @Override
-    public void getOutgoingTransferRequests() {
-        // Example: Print outgoing transfer requests (logic needed in server.Server)
-        System.out.println("Fetching outgoing transfer requests...");
+    public List<String> getOutgoingTransferRequests() throws RemoteException {
+        return serverLogic.getOutgoingRequests();
     }
 
     @Override
-    public void getIncomingTransferRequests() {
-        System.out.println("Fetching incoming transfer requests...");
+    public List<String> getIncomingTransferRequests(String username) throws RemoteException {
+        return serverLogic.getIncomingRequests(username);
     }
 
     @Override
-    public String getCurrentUserInfo(String username) {
-        System.out.println("Fetching current user info...");
-        Map<String, Double> balances = server.getAccountBalances(username);
-        double gbp = balances.get("GBP");
-        double usd = balances.get("USD");
-        double eur = balances.get("EUR");
-        double yen = balances.get("JPY");
-        return String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", username, gbp, usd, eur, yen);
+    public List<String> getCurrentUserInfo(String username) throws RemoteException {
+        return serverLogic.getAllUserInfo(username);
+    }
+
+
+    @Override
+    public Map<String, Double> getCurrentExchangeRates() throws RemoteException {
+        return serverLogic.getExchangeRates();
     }
 
     @Override
-    public Map<String, Double> getCurrentExchangeRates(String currency) {
-        return server.getCurrencyExchangeRates(currency);
+    public List<String> getOnlineUsers() throws RemoteException {
+        return serverLogic.getOnlineUsers();
     }
 
     @Override
-    public String getOnlineUsers() {
-        return "Online Users: " + server.getOnlineUsers();
+    public void sendTransferRequest(String sender, String recipient, String currency, double amount) throws RemoteException {
+        serverLogic.addTransferRequest(sender, recipient, currency, amount);
     }
 
     @Override
-    public void sendTransferRequest(String sender, String recipient, String currency, double amount) {
-        System.out.println("Send Transfer Request...");
-        server.transferCurrency(sender, recipient, currency, amount);
+    public void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException {
+        serverLogic.processTransferRequest(requestId, accepted);
+    }
+
+//    @Override
+//    public void sendNewAccountToServer(String username, String password) throws RemoteException {
+//        serverLogic.createAccount(username, password);
+//    }
+
+    @Override
+    public void updateAccountBalance(String username, String currency, double amount) throws IOException {
+        serverLogic.updateAccountBalance(username, currency, amount);
     }
 
     @Override
-    public void sendTransferRequestResponse() {
-        System.out.println("Send Transfer Request Response...");
+    public boolean verifyAccount(String username, String password) throws RemoteException {
+        try {
+            return serverLogic.verifyAccount(username, password);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
-    public boolean sendNewAccountToServer(String name, String password) {
-        System.out.println("Sending new account to server...");
-        return server.createAccount(name, password);
+    public void addOnlineUser(String username) throws RemoteException {
+        serverLogic.addOnlineUser(username);
     }
 
     @Override
-    public boolean login(String name, String password) {
-        return server.loginUser(name, password);
+    public void removeOnlineUser(String username) throws RemoteException {
+        serverLogic.removeOnlineUser(username);
     }
 
-    @Override
-    public void logout(String name){
-        server.logoutUser(name);
-    }
 
 }
