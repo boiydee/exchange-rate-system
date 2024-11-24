@@ -1,3 +1,7 @@
+package attributes.exhangeRateService;
+
+import attributes.TransactionState;
+
 import java.util.Currency;
 import java.util.Map;
 
