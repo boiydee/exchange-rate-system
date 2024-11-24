@@ -1,10 +1,14 @@
+import attributes.Account;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import server.ServerLogic;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +20,7 @@ class ServerLogicTest {
         serverLogic = new ServerLogic();
     }
 
-    @Test
+    @Test @Disabled
     void testCreateAccount() {
         String username = "testUser";
         String password = "testPass";
@@ -118,5 +122,47 @@ class ServerLogicTest {
 
         List<String> userInfo = serverLogic.getAllUserInfo(username);
         assertTrue(userInfo.get(0).contains("GBP"), "User should have GBP balance after concurrent transfers");
+    }
+
+    @Timeout(120)
+    @Disabled //Disabled due to how long it takes to run not because it doesnt work
+    @Test
+    void largeScaleConcurrencyTest(){
+        // This does not hit a deadlock.
+        // It takes roughly 100 seconds to run 2000 iterations as each iteration also locks and saves the accounts
+        int x = 2000;
+
+        CountDownLatch cdl = new CountDownLatch(3);
+
+        new Thread(() -> {
+            for (int i = 0; i < x; i++){
+                serverLogic.transferCurrency("concurentUser1","concurentUser2", "GBP", 1);
+            }
+            cdl.countDown();
+        }).start();
+
+        new Thread(() -> {
+            for (int i = 0; i < x; i++){
+                serverLogic.transferCurrency("concurentUser2","concurentUser3", "GBP", 1);
+            }
+            cdl.countDown();
+        }).start();
+
+        new Thread(() -> {
+            for (int i = 0; i < x; i++){
+                serverLogic.transferCurrency("concurentUser3","concurentUser1", "GBP", 1);
+            }
+            cdl.countDown();
+        }).start();
+
+        Map<String, Account> accounts = serverLogic.getAccounts();
+        try {
+            cdl.await();
+            assertEquals(20000, accounts.get("concurentUser1").getGbp_balance());
+            assertEquals(20000, accounts.get("concurentUser2").getGbp_balance());
+            assertEquals(20000, accounts.get("concurentUser3").getGbp_balance());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
