@@ -132,7 +132,7 @@ public class ServerLogic {
         Account account = accounts.get(username);
         List<String> userInfo = new ArrayList<>();
         if (account != null) {
-            String formattedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", "test", account.getGbp_balance(), account.getUsd_balance(), account.getEuro_balance(), account.getYen_balance());
+            String formattedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", username, account.getGbp_balance(), account.getUsd_balance(), account.getEuro_balance(), account.getYen_balance());
             userInfo.add(formattedInfo);
         }
         return userInfo;

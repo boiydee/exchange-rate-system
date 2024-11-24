@@ -42,7 +42,7 @@ public class RmiServerMethodsTest {
         }
 
         List<String> userInfo = underTest.getCurrentUserInfo(username);
-        String expectedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", "test", 0.0, 0.0, 0.0, 0.0);
+        String expectedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", username, 0.0, 0.0, 0.0, 0.0);
         assertTrue(userInfo.get(0).contains(expectedInfo), "User info should match expected format and values");
     }
 
