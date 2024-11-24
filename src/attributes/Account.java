@@ -1,119 +1,109 @@
 package attributes;
 
-/** Stores account information such as user details and different currency balances **/
+import java.io.Serializable;
 
-public class Account {
-
+public class Account implements Serializable {
     private final String username;
     private final String password;
 
-    public String getUsername() {
+    private float gbp_balance;
+    private float usd_balance;
+    private float euro_balance;
+    private float yen_balance;
+
+    // Constructor
+    public Account(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.gbp_balance = 0;
+        this.usd_balance = 0;
+        this.euro_balance = 0;
+        this.yen_balance = 0;
+    }
+
+    // Getters
+    public synchronized String getUsername() {
         return username;
     }
 
-    public String getPassword() {
+    public synchronized String getPassword() {
         return password;
     }
 
-    // different balances for each exchange currency
-    private double gbpBalance;
-    private double usdBalance;
-    private double euroBalance;
-    private double yenBalance;
-
-    public Account(String username, String password, double gbpBalance, double usdBalance, double euroBalance, double yenBalance) {
-        this.username = username;
-        this.password = password;
-        this.gbpBalance = gbpBalance;
-        this.usdBalance = usdBalance;
-        this.euroBalance = euroBalance;
-        this.yenBalance = yenBalance;
+    public synchronized float getGbp_balance() {
+        return gbp_balance;
     }
 
-    // getters and setters for retrieving balance amounts and altering the number of funds
-    // check is put in place for setters to ensure users can't take out more money than their current balance
-    public double getGbpBalance() {
-        return this.gbpBalance;
+    public synchronized float getUsd_balance() {
+        return usd_balance;
     }
 
-    public double getUsdBalance() {
-        return this.usdBalance;
+    public synchronized float getEuro_balance() {
+        return euro_balance;
     }
 
-    public double getEuroBalance() {
-        return this.euroBalance;
+    public synchronized float getYen_balance() {
+        return yen_balance;
     }
 
-    public double getYenBalance() {
-        return this.yenBalance;
+    // Setters
+    public synchronized void setGbp_balance(float gbp_balance) {
+        this.gbp_balance = gbp_balance;
     }
 
-    public void setGbpBalance(double gbp_balance) {
-        this.gbpBalance = gbp_balance;
+    public synchronized void setUsd_balance(float usd_balance) {
+        this.usd_balance = usd_balance;
     }
 
-    public void setUsdBalance(double usd_balance) {
-        this.usdBalance = usd_balance;
+    public synchronized void setEuro_balance(float euro_balance) {
+        this.euro_balance = euro_balance;
     }
 
-    public void setEuroBalance(double euro_balance) {
-        this.euroBalance = euro_balance;
+    public synchronized void setYen_balance(float yen_balance) {
+        this.yen_balance = yen_balance;
     }
 
-    public void setYenBalance(double yen_balance) {
-        this.yenBalance = yen_balance;
+    // Balance Modifiers
+    public synchronized void addToGbpBalance(float amount) {
+        this.gbp_balance += amount;
     }
 
-    public void addToGbpBalance(double amount){
-        this.gbpBalance += amount;
+    public synchronized void addToUsdBalance(float amount) {
+        this.usd_balance += amount;
     }
 
-    public void addToEuroBalance(double amount){
-        this.euroBalance += amount;
+    public synchronized void addToEuroBalance(float amount) {
+        this.euro_balance += amount;
     }
 
-    public void addToUsdBalance(double amount){
-        this.usdBalance += amount;
+    public synchronized void addToYenBalance(float amount) {
+        this.yen_balance += amount;
     }
 
-    public void addToYenBalance(double amount){
-        this.yenBalance += amount;
+    public synchronized void decreaseGbpBalance(float amount) {
+        this.gbp_balance -= amount;
     }
 
-    public void decreaseGbpBalance(double amount){
-        if (amount <= this.gbpBalance){
-            this.gbpBalance -= amount;
-        }
-        else {
-            System.err.println("Not enough funds in this account to complete this action.");
-        }
+    public synchronized void decreaseUsdBalance(float amount) {
+        this.usd_balance -= amount;
     }
 
-    public void decreaseEuroBalance(double amount){
-        if (amount <= this.euroBalance){
-            this.euroBalance -= amount;
-        }
-        else {
-            System.err.println("Not enough funds in this account to complete this action.");
-        }
+    public synchronized void decreaseEuroBalance(float amount) {
+        this.euro_balance -= amount;
     }
 
-    public void decreaseUsdBalance(double amount){
-        if (amount <= this.usdBalance){
-            this.usdBalance -= amount;
-        }
-        else {
-            System.err.println("Not enough funds in this account to complete this action.");
-        }
+    public synchronized void decreaseYenBalance(float amount) {
+        this.yen_balance -= amount;
     }
 
-    public void decreaseYenBalance(double amount){
-        if (amount <= this.yenBalance){
-            this.yenBalance -= amount;
-        }
-        else {
-            System.err.println("Not enough funds in this account to complete this action.");
-        }
+    @Override
+    public synchronized String toString() {
+        return "attributes.Account{" +
+                "username='" + username + '\'' +
+                ", gbp_balance=" + gbp_balance +
+                ", usd_balance=" + usd_balance +
+                ", euro_balance=" + euro_balance +
+                ", yen_balance=" + yen_balance +
+                '}';
     }
-
 }
