@@ -214,7 +214,7 @@ public class MainGUI extends JFrame {
                 return;
             }
 
-            String currency = JOptionPane.showInputDialog(this, "Enter currency (e.g., GBP, USD, EUR, YEN):");
+            String currency = JOptionPane.showInputDialog(this, "Enter currency (e.g., GBP, USD, EUR, JPY):");
             if (currency == null || currency.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Currency cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -247,8 +247,8 @@ public class MainGUI extends JFrame {
 
     private void transferWithinAccount(String username) {
         try {
-            String fromCurrency = JOptionPane.showInputDialog(this, "Enter the source currency (GBP, USD, EUR, YEN):");
-            String toCurrency = JOptionPane.showInputDialog(this, "Enter the target currency (GBP, USD, EUR, YEN):");
+            String fromCurrency = JOptionPane.showInputDialog(this, "Enter the source currency (GBP, USD, EUR, JPY):");
+            String toCurrency = JOptionPane.showInputDialog(this, "Enter the target currency (GBP, USD, EUR, JPY):");
 
             if (fromCurrency == null || toCurrency == null || fromCurrency.isEmpty() || toCurrency.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Both source and target currencies must be specified.", "Error", JOptionPane.ERROR_MESSAGE);

@@ -154,21 +154,26 @@ public class ServerLogic {
     public synchronized void loadExchangeRates() {
         System.out.println("Fetching exchange rates...");
         exchangeRates.clear();
-        Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
+        Map<String, Double> usdlatestRates = exchangeRateService.getConvertionRates("USD");
+        Map<String, Double> eurlatestRates = exchangeRateService.getConvertionRates("EUR");
+        Map<String, Double> yenlatestRates = exchangeRateService.getConvertionRates("JPY");
+        Map<String, Double> gbplatestRates = exchangeRateService.getConvertionRates("GBP");
 
-        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
-            String currency = entry.getKey();
-            Double rate = entry.getValue();
-
-            // USD to other currencies
-            exchangeRates.put("USD-" + currency, rate);
-
-            // Other currencies to USD
-            if (!currency.equals("USD")) {
-                exchangeRates.put(currency + "-USD", 1 / rate);
-            }
+        for (Map.Entry<String, Double> entry : eurlatestRates.entrySet()) {
+            exchangeRates.put("EUR -> " + entry.getKey(), entry.getValue());
         }
-        System.out.println("Exchange rates loaded: " + exchangeRates);
+
+        for (Map.Entry<String, Double> entry : usdlatestRates.entrySet()) {
+            exchangeRates.put("USD -> " + entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, Double> entry : yenlatestRates.entrySet()) {
+            exchangeRates.put("JPY -> " + entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, Double> entry : gbplatestRates.entrySet()) {
+            exchangeRates.put("GBP -> " + entry.getKey(), entry.getValue());
+        }
     }
 
 
