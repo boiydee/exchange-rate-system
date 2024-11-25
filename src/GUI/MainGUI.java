@@ -100,7 +100,12 @@ public class MainGUI extends JFrame {
                         return;
                     }
 
-                    String requestId = requestDetails[5];
+
+                    String requestId = requestDetails[0];
+                    int startIndex = requestId.indexOf("id='") + 4;
+                    int endIndex = requestId.indexOf("'", startIndex);
+
+                    String formattedRequestId = requestId.substring(startIndex, endIndex);
                     int choice = JOptionPane.showOptionDialog(
                             this,
                             "Do you want to accept or reject this request?\n" + selectedRequest,
@@ -113,9 +118,9 @@ public class MainGUI extends JFrame {
                     );
 
                     if (choice == JOptionPane.YES_OPTION) {
-                        processTransactionRequest(requestId, true);
+                        processTransactionRequest(formattedRequestId, true);
                     } else if (choice == JOptionPane.NO_OPTION) {
-                        processTransactionRequest(requestId, false);
+                        processTransactionRequest(formattedRequestId, false);
                     }
 
                     JOptionPane.showMessageDialog(this, "Request processed. Returning to the main menu.", "Info", JOptionPane.INFORMATION_MESSAGE);
