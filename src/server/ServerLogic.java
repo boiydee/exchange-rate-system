@@ -182,16 +182,26 @@ public class ServerLogic {
         exchangeRateLock.writeLock().lock();
         try {
             System.out.println("Updating exchange rates...");
-            Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
-            for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
-                String currency = entry.getKey();
-                Double rate = entry.getValue();
-                exchangeRates.put(currency + "-USD", rate);
-                if (!currency.equals("USD")) {
-                    exchangeRates.put("USD-" + currency, 1 / rate);
-                }
+            Map<String, Double> usdlatestRates = exchangeRateService.getConvertionRates("USD");
+            Map<String, Double> eurlatestRates = exchangeRateService.getConvertionRates("EUR");
+            Map<String, Double> yenlatestRates = exchangeRateService.getConvertionRates("JPY");
+            Map<String, Double> gbplatestRates = exchangeRateService.getConvertionRates("GBP");
+
+            for (Map.Entry<String, Double> entry : eurlatestRates.entrySet()) {
+                exchangeRates.put("EUR -> " + entry.getKey(), entry.getValue());
             }
-            System.out.println("Exchange rates updated: " + exchangeRates);
+
+            for (Map.Entry<String, Double> entry : usdlatestRates.entrySet()) {
+                exchangeRates.put("USD -> " + entry.getKey(), entry.getValue());
+            }
+
+            for (Map.Entry<String, Double> entry : yenlatestRates.entrySet()) {
+                exchangeRates.put("JPY -> " + entry.getKey(), entry.getValue());
+            }
+
+            for (Map.Entry<String, Double> entry : gbplatestRates.entrySet()) {
+                exchangeRates.put("GBP -> " + entry.getKey(), entry.getValue());
+            }
         } finally {
             exchangeRateLock.writeLock().unlock();
         }
@@ -213,7 +223,7 @@ public class ServerLogic {
                 return false;
             }
 
-            double exchangeRate = getExchangeRate(fromCurrency + "-" + toCurrency);
+            double exchangeRate = getExchangeRate(fromCurrency + " -> " + toCurrency);
             if (exchangeRate <= 0) {
                 System.out.printf("Invalid exchange rate for %s to %s.%n", fromCurrency, toCurrency);
                 return false;
