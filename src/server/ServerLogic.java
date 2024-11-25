@@ -273,7 +273,7 @@ public class ServerLogic {
                     case "GBP" -> account.setGbp_balance((float) amount);
                     case "USD" -> account.setUsd_balance((float) amount);
                     case "EUR" -> account.setEuro_balance((float) amount);
-                    case "YEN" -> account.setYen_balance((float) amount);
+                    case "JPY" -> account.setYen_balance((float) amount);
                     default -> throw new IllegalArgumentException("Unsupported currency: " + currency);
                 }
                 saveAccounts();
@@ -288,7 +288,7 @@ public class ServerLogic {
             case "GBP" -> account.setGbp_balance(account.getGbp_balance() + amount);
             case "USD" -> account.setUsd_balance(account.getUsd_balance() + amount);
             case "EUR" -> account.setEuro_balance(account.getEuro_balance() + amount);
-            case "YEN" -> account.setYen_balance(account.getYen_balance() + amount);
+            case "JPY" -> account.setYen_balance(account.getYen_balance() + amount);
             default -> throw new IllegalArgumentException("Unsupported currency: " + currency);
         }
     }
