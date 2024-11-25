@@ -61,6 +61,11 @@ public class MockRmiMethods implements RmiMethodsInterface {
     }
 
     @Override
+    public boolean transferWithinAccount(String username, String fromCurrency, String toCurrency, float amount) throws RemoteException {
+        return false;
+    }
+
+    @Override
     public void updateAccountBalance(String username, String currency, double amount) throws RemoteException {
         userBalances.computeIfAbsent(username, k -> new HashMap<>()).put(currency, amount);
     }

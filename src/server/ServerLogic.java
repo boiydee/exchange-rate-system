@@ -152,29 +152,25 @@ public class ServerLogic {
 
     // Load exchange rates from the live service
     public synchronized void loadExchangeRates() {
-        System.out.println("Fetching exchange rates from ExchangeRateService...");
+        System.out.println("Fetching exchange rates...");
         exchangeRates.clear();
-        Map<String, Double> usdlatestRates = exchangeRateService.getConvertionRates("USD");
-        Map<String, Double> eurlatestRates = exchangeRateService.getConvertionRates("EUR");
-        Map<String, Double> yenlatestRates = exchangeRateService.getConvertionRates("JPY");
-        Map<String, Double> gbplatestRates = exchangeRateService.getConvertionRates("GBP");
+        Map<String, Double> latestRates = exchangeRateService.getConvertionRates("USD");
 
-        for (Map.Entry<String, Double> entry : eurlatestRates.entrySet()) {
-            exchangeRates.put("EUR -> " + entry.getKey(), entry.getValue());
-        }
+        for (Map.Entry<String, Double> entry : latestRates.entrySet()) {
+            String currency = entry.getKey();
+            Double rate = entry.getValue();
 
-        for (Map.Entry<String, Double> entry : usdlatestRates.entrySet()) {
-            exchangeRates.put("USD -> " + entry.getKey(), entry.getValue());
-        }
+            // USD to other currencies
+            exchangeRates.put("USD-" + currency, rate);
 
-        for (Map.Entry<String, Double> entry : yenlatestRates.entrySet()) {
-            exchangeRates.put("JPY -> " + entry.getKey(), entry.getValue());
+            // Other currencies to USD
+            if (!currency.equals("USD")) {
+                exchangeRates.put(currency + "-USD", 1 / rate);
+            }
         }
-
-        for (Map.Entry<String, Double> entry : gbplatestRates.entrySet()) {
-            exchangeRates.put("GBP -> " + entry.getKey(), entry.getValue());
-        }
+        System.out.println("Exchange rates loaded: " + exchangeRates);
     }
+
 
     // Update exchange rates dynamically
     public void updateExchangeRates() {
@@ -207,34 +203,32 @@ public class ServerLogic {
                 return false;
             }
 
-            // Check sufficient funds
             if (!hasSufficientFunds(account, fromCurrency, amount)) {
-                System.out.printf("Insufficient funds: %s has %.2f in %s, attempted to transfer %.2f%n",
-                        username, getBalance(account, fromCurrency), fromCurrency, amount);
+                System.out.printf("Insufficient funds: %s has %.2f in %s, needs %.2f.%n", username, getBalance(account, fromCurrency), fromCurrency, amount);
                 return false;
             }
 
-            // Get exchange rate
             double exchangeRate = getExchangeRate(fromCurrency + "-" + toCurrency);
             if (exchangeRate <= 0) {
-                System.out.printf("Invalid exchange rate: %s-%s not found or zero.%n", fromCurrency, toCurrency);
+                System.out.printf("Invalid exchange rate for %s to %s.%n", fromCurrency, toCurrency);
                 return false;
             }
 
-            // Perform the transfer
             float convertedAmount = (float) (amount * exchangeRate);
+
+            // Adjust balances
             adjustBalance(account, fromCurrency, -amount);
             adjustBalance(account, toCurrency, convertedAmount);
 
             saveAccounts(); // Persist changes
-            System.out.printf("Transfer successful: %.2f %s to %.2f %s for user %s.%n",
-                    amount, fromCurrency, convertedAmount, toCurrency, username);
+            System.out.printf("Transfer successful: %.2f %s to %.2f %s for user %s.%n", amount, fromCurrency, convertedAmount, toCurrency, username);
 
             return true;
         } finally {
             balanceLock.unlock();
         }
     }
+
 
 
 
@@ -288,6 +282,7 @@ public class ServerLogic {
 
 
 
+
     private boolean hasSufficientFunds(Account account, String currency, float amount) {
         float balance = getBalance(account, currency);
         System.out.printf("Checking funds: %s has %.2f in %s, needs %.2f.%n", account.getUsername(), balance, currency, amount);
@@ -308,8 +303,10 @@ public class ServerLogic {
     public double getExchangeRate(String currencyPair) {
         exchangeRateLock.readLock().lock();
         try {
-            double rate = exchangeRates.getOrDefault(currencyPair, -1.0); // -1.0 indicates missing rate
-            System.out.printf("Exchange rate for %s: %.2f%n", currencyPair, rate);
+            double rate = exchangeRates.getOrDefault(currencyPair, -1.0);
+            if (rate <= 0) {
+                System.out.printf("Exchange rate for %s is invalid or missing.%n", currencyPair);
+            }
             return rate;
         } finally {
             exchangeRateLock.readLock().unlock();

@@ -250,9 +250,6 @@ public class MainGUI extends JFrame {
                 return;
             }
 
-            String currencyPair = fromCurrency.toUpperCase() + "-" + toCurrency.toUpperCase();
-            System.out.println("Currency pair: " + currencyPair);
-
             float amount = Float.parseFloat(JOptionPane.showInputDialog(this, "Enter the amount to transfer:"));
             if (amount <= 0) {
                 JOptionPane.showMessageDialog(this, "Amount must be greater than zero.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -267,10 +264,10 @@ public class MainGUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "Transfer failed. Please check your balance and try again.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "An error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
 
     private void logout() {
