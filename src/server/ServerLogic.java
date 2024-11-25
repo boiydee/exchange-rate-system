@@ -256,8 +256,10 @@ public class ServerLogic {
             case "USD" -> account.setUsd_balance(account.getUsd_balance() + amount);
             case "EUR" -> account.setEuro_balance(account.getEuro_balance() + amount);
             case "YEN" -> account.setYen_balance(account.getYen_balance() + amount);
+            default -> throw new IllegalArgumentException("Unsupported currency: " + currency);
         }
     }
+
 
 
 
@@ -288,15 +290,24 @@ public class ServerLogic {
             Account toAccount = accounts.get(toUser);
 
             if (fromAccount != null && toAccount != null && hasSufficientFunds(fromAccount, currencyType, amount)) {
+                // Deduct from the sender
                 adjustBalance(fromAccount, currencyType, -amount);
+
+                // Add to the recipient
                 adjustBalance(toAccount, currencyType, amount);
+
+                System.out.println("Transfer completed: " + amount + " " + currencyType + " from " + fromUser + " to " + toUser);
                 return true;
             }
-            return false; // Transfer fails if accounts are invalid or funds are insufficient
+
+            System.out.println("Transfer failed due to insufficient funds or invalid accounts.");
+            return false;
         } finally {
             balanceLock.unlock();
         }
     }
+
+
 
 
 
@@ -357,13 +368,17 @@ public class ServerLogic {
                         + account.getGbp_balance() + "," + account.getUsd_balance() + ","
                         + account.getEuro_balance() + "," + account.getYen_balance());
                 writer.newLine();
+                System.out.println("Saved account: " + account);
             }
+            System.out.println("All accounts saved to bankAccounts.txt.");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             fileLock.writeLock().unlock();
         }
     }
+
+
 
 
     public void saveTransferRequests() {
@@ -403,15 +418,15 @@ public class ServerLogic {
 
     public void processTransferRequest(String requestId, boolean accepted) {
         synchronized (exchangeRequests) {
-            // Locate the request by its ID
             ExchangeRequest request = exchangeRequests.stream()
                     .filter(r -> r.getId().equals(requestId))
                     .findFirst()
                     .orElse(null);
 
             if (request != null) {
+                TransactionState newState;
+
                 if (accepted) {
-                    // Perform the actual transfer
                     boolean success = transferCurrency(
                             request.getOriginAccount(),
                             request.getDestinationAccount(),
@@ -420,18 +435,23 @@ public class ServerLogic {
                     );
 
                     if (success) {
-                        request.setState(TransactionState.ACCEPTED);
+                        newState = TransactionState.ACCEPTED;
+                        saveAccounts(); // Persist account changes
+                    } else {
+                        newState = TransactionState.CANCELLED;
                     }
                 } else {
-                    request.setState(TransactionState.CANCELLED);
+                    newState = TransactionState.CANCELLED;
                 }
 
-                // Save updated requests to the file
-                saveExchangeRequests();
+                // Update the request state
+                request.setState(newState);
+                saveExchangeRequests(); // Persist request state changes
+            } else {
+                System.out.println("Request not found for ID: " + requestId);
             }
         }
     }
-
 
 
 
@@ -439,6 +459,37 @@ public class ServerLogic {
         synchronized (exchangeRequests) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/resources/exchangeRequests.txt"))) {
                 for (ExchangeRequest request : exchangeRequests) {
+                    writer.write(
+                            request.getOriginAccount() + "," +
+                                    request.getDestinationAccount() + "," +
+                                    request.getCurrency() + "," +
+                                    request.getAmount() + "," +
+                                    request.getState() + "," +
+                                    request.getId()
+                    );
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+    public void saveExchangeRequests(String acceptedRequestId, TransactionState newState) {
+        synchronized (exchangeRequests) {
+            System.out.println("Saving exchange requests...");
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/resources/exchangeRequests.txt"))) {
+                for (ExchangeRequest request : exchangeRequests) {
+                    // Check if this is the request being updated
+                    if (request.getId().equals(acceptedRequestId)) {
+                        request.setState(newState); // Update the state
+                        System.out.println("Updated request ID: " + acceptedRequestId + " to state: " + newState);
+                    }
+
+                    // Write the request to the file
                     writer.write(
                             request.getOriginAccount() + "," +
                                     request.getDestinationAccount() + "," +

@@ -75,7 +75,7 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
 
     @Override
     public void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException {
-        serverLogic.processTransferRequest(requestId, accepted);
+        serverLogic.processTransferRequest(requestId, accepted); // Ensure this calls ServerLogic's method
     }
 
 

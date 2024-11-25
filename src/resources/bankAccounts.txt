@@ -1,11 +1,11 @@
 user1,pass1,0.0,50.0,0.0,0.0
 user2,pass2,0.0,150.0,0.0,0.0
-test2,test2,231.0,0.0,0.0,0.0
-concurrentUser,concurrentPass,82.66999,80.0,0.0,0.0
+test2,test2,131.0,0.0,0.0,0.0
+concurrentUser,concurrentPass,142.66998,80.0,0.0,0.0
 concurentUser3, password,20000.0,20000.0,20000.0,20000.0
-test,test,0.0,0.0,0.0,0.0
+test,test,100.0,0.0,0.0,0.0
 concurentUser2, password,20000.0,20000.0,20000.0,20000.0
 concurentUser1, password,20000.0,20000.0,20000.0,20000.0
 verifyUser,verifyPass,0.0,0.0,0.0,0.0
-testUser,testPass,238.00998,50.0,0.0,0.0
+testUser,testPass,388.00998,50.0,0.0,0.0
 test1,test1,0.0,0.0,0.0,0.0

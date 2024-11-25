@@ -110,6 +110,27 @@ public class MainGUI extends JFrame {
                 );
 
                 if (selectedRequest != null) {
+                    System.out.println("Selected request: " + selectedRequest);
+
+                    // Extract the request ID from the selected request string
+                    String[] requestDetails = selectedRequest.split(",");
+                    if (requestDetails.length < 6) {
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Invalid request format.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
+                    }
+
+                    String requestId = requestDetails[0];
+                    int startIndex = requestId.indexOf("'") + 1; // Find the first single quote and move to the next character
+                    int endIndex = requestId.indexOf("'", startIndex); // Find the closing single quote
+                    String formattedRequestId = requestId.substring(startIndex, endIndex);
+
+                    System.out.println("Extracted request ID: " + requestId);
+
                     int choice = JOptionPane.showOptionDialog(
                             this,
                             "Do you want to accept or reject this request?\n" + selectedRequest,
@@ -122,9 +143,9 @@ public class MainGUI extends JFrame {
                     );
 
                     if (choice == JOptionPane.YES_OPTION) {
-                        processTransactionRequest(selectedRequest, true);
+                        processTransactionRequest(formattedRequestId, true);
                     } else if (choice == JOptionPane.NO_OPTION) {
-                        processTransactionRequest(selectedRequest, false);
+                        processTransactionRequest(formattedRequestId, false);
                     }
 
                     // Return to main menu after processing
@@ -144,11 +165,22 @@ public class MainGUI extends JFrame {
 
     private void processTransactionRequest(String requestId, boolean accepted) {
         try {
+            System.out.println("Processing request ID: " + requestId + " with accepted: " + accepted);
             serverStub.sendTransferRequestResponse(requestId, accepted);
+
+            String message = accepted
+                    ? "The request has been accepted and processed."
+                    : "The request has been rejected.";
+            JOptionPane.showMessageDialog(this, message, "Request Processed", JOptionPane.INFORMATION_MESSAGE);
+
+            returnToMainMenu();
         } catch (RemoteException e) {
             showError(e);
         }
     }
+
+
+
 
     private void returnToMainMenu() {
         dispose();
@@ -158,7 +190,7 @@ public class MainGUI extends JFrame {
 
 
 
-    private void fetchAccountInfo() {
+    public void fetchAccountInfo() {
         try {
             // Call the server's method to get account info for the current user
             List<String> accountInfo = serverStub.getCurrentUserInfo(username);
@@ -191,7 +223,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void fetchExchangeRates() {
+    public void fetchExchangeRates() {
         try {
             // Call the server's method to get exchange rates
             Map<String, Double> exchangeRates = serverStub.getCurrentExchangeRates();
@@ -224,7 +256,7 @@ public class MainGUI extends JFrame {
     }
 
 
-    private void fetchOnlineUsers() {
+    public void fetchOnlineUsers() {
         try {
             // Call the server's method to get the list of online users
             List<String> onlineUsers = serverStub.getOnlineUsers();
