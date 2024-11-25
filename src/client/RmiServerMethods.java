@@ -78,6 +78,11 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
         serverLogic.processTransferRequest(requestId, accepted); // Ensure this calls ServerLogic's method
     }
 
+    @Override
+    public boolean transferWithinAccount(String username, String fromCurrency, String toCurrency, float amount) throws RemoteException {
+        return serverLogic.transferWithinAccount(username, fromCurrency, toCurrency, amount);
+    }
+
 
 
 }

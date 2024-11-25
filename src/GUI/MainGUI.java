@@ -49,7 +49,7 @@ public class MainGUI extends JFrame {
                 case GETCURRENTEXCHANGERATES -> fetchExchangeRates();
                 case GETONLINEUSERS -> fetchOnlineUsers();
                 case SENDTRANSFERREQUESTS -> sendTransferRequest();
-                //case SENDNEWACCOUNTTOSERVER -> sendNewAccountToServer();
+                case TRANSFERWITHINACCOUNT -> transferWithinAccount(username);
                 case EXIT -> logout();
                 default -> JOptionPane.showMessageDialog(MainGUI.this, "Unknown option selected.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -58,46 +58,28 @@ public class MainGUI extends JFrame {
 
     public void fetchOutgoingRequests() {
         try {
-            // Call the server's method to get outgoing requests
             List<String> outgoingRequests = serverStub.getOutgoingTransferRequests(username);
 
             if (outgoingRequests.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No outgoing transfer requests found.",
-                        "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, "No outgoing transfer requests found.", "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 StringBuilder requests = new StringBuilder("Outgoing Transfer Requests:\n");
                 for (String request : outgoingRequests) {
                     requests.append(request).append("\n");
                 }
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        requests.toString(),
-                        "Outgoing Requests",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, requests.toString(), "Outgoing Requests", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (RemoteException e) {
             showError(e);
         }
     }
 
-
     private void fetchIncomingRequests() {
         try {
             List<String> incomingRequests = serverStub.getIncomingTransferRequests(username);
 
             if (incomingRequests.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No incoming transfer requests found.",
-                        "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, "No incoming transfer requests found.", "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 String selectedRequest = (String) JOptionPane.showInputDialog(
                         this,
@@ -112,25 +94,13 @@ public class MainGUI extends JFrame {
                 if (selectedRequest != null) {
                     System.out.println("Selected request: " + selectedRequest);
 
-                    // Extract the request ID from the selected request string
                     String[] requestDetails = selectedRequest.split(",");
                     if (requestDetails.length < 6) {
-                        JOptionPane.showMessageDialog(
-                                this,
-                                "Invalid request format.",
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
+                        JOptionPane.showMessageDialog(this, "Invalid request format.", "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
-                    String requestId = requestDetails[0];
-                    int startIndex = requestId.indexOf("'") + 1; // Find the first single quote and move to the next character
-                    int endIndex = requestId.indexOf("'", startIndex); // Find the closing single quote
-                    String formattedRequestId = requestId.substring(startIndex, endIndex);
-
-                    System.out.println("Extracted request ID: " + requestId);
-
+                    String requestId = requestDetails[5];
                     int choice = JOptionPane.showOptionDialog(
                             this,
                             "Do you want to accept or reject this request?\n" + selectedRequest,
@@ -143,18 +113,12 @@ public class MainGUI extends JFrame {
                     );
 
                     if (choice == JOptionPane.YES_OPTION) {
-                        processTransactionRequest(formattedRequestId, true);
+                        processTransactionRequest(requestId, true);
                     } else if (choice == JOptionPane.NO_OPTION) {
-                        processTransactionRequest(formattedRequestId, false);
+                        processTransactionRequest(requestId, false);
                     }
 
-                    // Return to main menu after processing
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Request processed. Returning to the main menu.",
-                            "Info",
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
+                    JOptionPane.showMessageDialog(this, "Request processed. Returning to the main menu.", "Info", JOptionPane.INFORMATION_MESSAGE);
                     returnToMainMenu();
                 }
             }
@@ -165,7 +129,6 @@ public class MainGUI extends JFrame {
 
     private void processTransactionRequest(String requestId, boolean accepted) {
         try {
-            System.out.println("Processing request ID: " + requestId + " with accepted: " + accepted);
             serverStub.sendTransferRequestResponse(requestId, accepted);
 
             String message = accepted
@@ -179,133 +142,79 @@ public class MainGUI extends JFrame {
         }
     }
 
-
-
-
     private void returnToMainMenu() {
         dispose();
         new MainGUI(username, serverStub).setVisible(true);
     }
 
-
-
-
     public void fetchAccountInfo() {
         try {
-            // Call the server's method to get account info for the current user
             List<String> accountInfo = serverStub.getCurrentUserInfo(username);
 
-            // Check if the list is empty
             if (accountInfo == null || accountInfo.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No account information found.",
-                        "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, "No account information found.", "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // Display the account info in a formatted string
-                StringBuilder info = new StringBuilder("attributes.Account Info:\n");
+                StringBuilder info = new StringBuilder("Account Info:\n");
                 for (String detail : accountInfo) {
                     info.append(detail).append("\n");
                 }
-                JOptionPane.showMessageDialog(
-                        this,
-                        info.toString(),
-                        "attributes.Account Information",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, info.toString(), "Account Information", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
-
     public void fetchExchangeRates() {
         try {
-            // Call the server's method to get exchange rates
             Map<String, Double> exchangeRates = serverStub.getCurrentExchangeRates();
 
-            // Check if the map is empty
             if (exchangeRates == null || exchangeRates.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No exchange rates found.",
-                        "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, "No exchange rates found.", "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // Display the exchange rates in a formatted string
                 StringBuilder rates = new StringBuilder("Exchange Rates:\n");
                 for (Map.Entry<String, Double> entry : exchangeRates.entrySet()) {
                     rates.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
                 }
-                JOptionPane.showMessageDialog(
-                        this,
-                        rates.toString(),
-                        "Exchange Rates",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, rates.toString(), "Exchange Rates", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
-
     public void fetchOnlineUsers() {
         try {
-            // Call the server's method to get the list of online users
             List<String> onlineUsers = serverStub.getOnlineUsers();
 
-            // Check if the list is empty
             if (onlineUsers.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No online users found.",
-                        "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, "No online users found.", "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // Display the list of online users in a formatted string
                 StringBuilder users = new StringBuilder("Online Users:\n");
                 for (String user : onlineUsers) {
                     users.append(user).append("\n");
                 }
-                JOptionPane.showMessageDialog(
-                        this,
-                        users.toString(),
-                        "Online Users",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(this, users.toString(), "Online Users", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
-
     public void sendTransferRequest() {
         try {
-            // Prompt for recipient username
             String recipient = JOptionPane.showInputDialog(this, "Enter recipient username:");
             if (recipient == null || recipient.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Recipient username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Prompt for currency type
             String currency = JOptionPane.showInputDialog(this, "Enter currency (e.g., GBP, USD, EUR, YEN):");
             if (currency == null || currency.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Currency cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Prompt for transfer amount
             String amountStr = JOptionPane.showInputDialog(this, "Enter transfer amount:");
             if (amountStr == null || amountStr.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Amount cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -324,42 +233,44 @@ public class MainGUI extends JFrame {
                 return;
             }
 
-            // Send transfer request via serverStub
             serverStub.sendTransferRequest(username, recipient, currency.toUpperCase(), amount);
-
             JOptionPane.showMessageDialog(this, "Transfer request sent successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (RemoteException e) {
-            // Show an error message if the server call fails
             showError(e);
         }
     }
 
+    private void transferWithinAccount(String username) {
+        try {
+            String fromCurrency = JOptionPane.showInputDialog(this, "Enter the source currency (GBP, USD, EUR, YEN):");
+            String toCurrency = JOptionPane.showInputDialog(this, "Enter the target currency (GBP, USD, EUR, YEN):");
 
-//    private void sendNewAccountToServer() {
-//        try {
-//            // Prompt for the new account username
-//            String newUsername = JOptionPane.showInputDialog(this, "Enter new account username:");
-//            if (newUsername == null || newUsername.isEmpty()) {
-//                JOptionPane.showMessageDialog(this, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//
-//            // Prompt for the new account password
-//            String newPassword = JOptionPane.showInputDialog(this, "Enter new account password:");
-//            if (newPassword == null || newPassword.isEmpty()) {
-//                JOptionPane.showMessageDialog(this, "Password cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//
-//            // Send the new account details to the server
-//            serverStub.sendNewAccountToServer(newUsername, newPassword);
-//
-//            JOptionPane.showMessageDialog(this, "New account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-//        } catch (RemoteException e) {
-//            // Show an error message if the server call fails
-//            showError(e);
-//        }
-//    }
+            if (fromCurrency == null || toCurrency == null || fromCurrency.isEmpty() || toCurrency.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Both source and target currencies must be specified.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String currencyPair = fromCurrency.toUpperCase() + "-" + toCurrency.toUpperCase();
+            System.out.println("Currency pair: " + currencyPair);
+
+            float amount = Float.parseFloat(JOptionPane.showInputDialog(this, "Enter the amount to transfer:"));
+            if (amount <= 0) {
+                JOptionPane.showMessageDialog(this, "Amount must be greater than zero.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean success = serverStub.transferWithinAccount(username, fromCurrency.toUpperCase(), toCurrency.toUpperCase(), amount);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Transfer successful!", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Transfer failed. Please check your balance and try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
 
     private void logout() {
@@ -371,7 +282,6 @@ public class MainGUI extends JFrame {
         }
         System.exit(0);
     }
-
 
     private void showError(Exception e) {
         SwingUtilities.invokeLater(() ->

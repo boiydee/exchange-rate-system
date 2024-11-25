@@ -201,18 +201,42 @@ public class ServerLogic {
         balanceLock.lock();
         try {
             Account account = accounts.get(username);
-            if (account != null && hasSufficientFunds(account, fromCurrency, amount)) {
-                float exchangeRate = (float) getExchangeRate(fromCurrency + "-" + toCurrency);
-                adjustBalance(account, fromCurrency, -amount);
-                adjustBalance(account, toCurrency, amount * exchangeRate);
-                saveAccounts();
-                return true;
+
+            if (account == null) {
+                System.out.println("Account not found for user: " + username);
+                return false;
             }
-            return false;
+
+            // Check sufficient funds
+            if (!hasSufficientFunds(account, fromCurrency, amount)) {
+                System.out.printf("Insufficient funds: %s has %.2f in %s, attempted to transfer %.2f%n",
+                        username, getBalance(account, fromCurrency), fromCurrency, amount);
+                return false;
+            }
+
+            // Get exchange rate
+            double exchangeRate = getExchangeRate(fromCurrency + "-" + toCurrency);
+            if (exchangeRate <= 0) {
+                System.out.printf("Invalid exchange rate: %s-%s not found or zero.%n", fromCurrency, toCurrency);
+                return false;
+            }
+
+            // Perform the transfer
+            float convertedAmount = (float) (amount * exchangeRate);
+            adjustBalance(account, fromCurrency, -amount);
+            adjustBalance(account, toCurrency, convertedAmount);
+
+            saveAccounts(); // Persist changes
+            System.out.printf("Transfer successful: %.2f %s to %.2f %s for user %s.%n",
+                    amount, fromCurrency, convertedAmount, toCurrency, username);
+
+            return true;
         } finally {
             balanceLock.unlock();
         }
     }
+
+
 
     public void addTransferRequest(String sender, String recipient, String currency, double amount) {
         synchronized (exchangeRequests) {
@@ -265,23 +289,34 @@ public class ServerLogic {
 
 
     private boolean hasSufficientFunds(Account account, String currency, float amount) {
+        float balance = getBalance(account, currency);
+        System.out.printf("Checking funds: %s has %.2f in %s, needs %.2f.%n", account.getUsername(), balance, currency, amount);
+        return balance >= amount;
+    }
+
+    private float getBalance(Account account, String currency) {
         return switch (currency.toUpperCase()) {
-            case "GBP" -> account.getGbp_balance() >= amount;
-            case "USD" -> account.getUsd_balance() >= amount;
-            case "EUR" -> account.getEuro_balance() >= amount;
-            case "YEN" -> account.getYen_balance() >= amount;
-            default -> false;
+            case "GBP" -> account.getGbp_balance();
+            case "USD" -> account.getUsd_balance();
+            case "EUR" -> account.getEuro_balance();
+            case "YEN" -> account.getYen_balance();
+            default -> -1.0f; // Invalid currency
         };
     }
+
 
     public double getExchangeRate(String currencyPair) {
         exchangeRateLock.readLock().lock();
         try {
-            return exchangeRates.getOrDefault(currencyPair, 1.0);
+            double rate = exchangeRates.getOrDefault(currencyPair, -1.0); // -1.0 indicates missing rate
+            System.out.printf("Exchange rate for %s: %.2f%n", currencyPair, rate);
+            return rate;
         } finally {
             exchangeRateLock.readLock().unlock();
         }
     }
+
+
 
     public boolean transferCurrency(String fromUser, String toUser, String currencyType, float amount) {
         balanceLock.lock();

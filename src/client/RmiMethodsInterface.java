@@ -30,5 +30,8 @@ public interface RmiMethodsInterface extends Remote {
 
     void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException;
 
+    boolean transferWithinAccount(String username, String fromCurrency, String toCurrency, float amount) throws RemoteException;
+
+
 
 }
