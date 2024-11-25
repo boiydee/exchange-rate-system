@@ -15,7 +15,7 @@ public class ExchangeRequestTest {
         double amount = 10.00;
         TransactionState initialState = TransactionState.PENDING;
 
-        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState);
+        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState, "test");
 
         assertEquals(originAccount, exchangeRequest.getOriginAccount(), "Origin account should match");
         assertEquals(destinationAccount, exchangeRequest.getDestinationAccount(), "Destination account should match");
@@ -33,7 +33,7 @@ public class ExchangeRequestTest {
         double amount = 10.00;
         TransactionState initialState = TransactionState.PENDING;
 
-        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState);
+        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState, "test");
 
         assertEquals(TransactionState.PENDING, exchangeRequest.getState(), "Initial state should be PENDING");
 
@@ -52,7 +52,7 @@ public class ExchangeRequestTest {
         double amount = 10.00;
         TransactionState initialState = TransactionState.PENDING;
 
-        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState);
+        ExchangeRequest exchangeRequest = new ExchangeRequest(originAccount, destinationAccount, currency, amount, initialState, "test");
 
         String result = exchangeRequest.toString();
 

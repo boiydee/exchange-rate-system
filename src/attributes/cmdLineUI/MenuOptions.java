@@ -13,6 +13,7 @@ public enum MenuOptions {
     GETCURRENTEXCHANGERATES("View current exchange rates"),
     GETONLINEUSERS("View Online Users"),
     SENDTRANSFERREQUESTS("Send new transfer request"),
+    TRANSFERWITHINACCOUNT("Transfer within account"),
 
     EXIT("Quit");
 

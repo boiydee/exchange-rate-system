@@ -47,11 +47,6 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
         serverLogic.addTransferRequest(sender, recipient, currency, amount);
     }
 
-    @Override
-    public void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException {
-        serverLogic.processTransferRequest(requestId, accepted);
-    }
-
 
     @Override
     public void updateAccountBalance(String username, String currency, double amount) throws IOException {
@@ -77,6 +72,17 @@ public class RmiServerMethods extends UnicastRemoteObject implements RmiMethodsI
     public void removeOnlineUser(String username) throws RemoteException {
         serverLogic.removeOnlineUser(username);
     }
+
+    @Override
+    public void sendTransferRequestResponse(String requestId, boolean accepted) throws RemoteException {
+        serverLogic.processTransferRequest(requestId, accepted); // Ensure this calls ServerLogic's method
+    }
+
+    @Override
+    public boolean transferWithinAccount(String username, String fromCurrency, String toCurrency, float amount) throws RemoteException {
+        return serverLogic.transferWithinAccount(username, fromCurrency, toCurrency, amount);
+    }
+
 
 
 }

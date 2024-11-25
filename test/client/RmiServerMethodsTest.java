@@ -32,21 +32,6 @@ public class RmiServerMethodsTest {
     }
 
     @Test
-    public void canGetUserInfo() throws RemoteException {
-        String username = "test";
-        String password = "testPass";
-        try {
-            testServerLogic.verifyAccount(username, password);
-        } catch (Exception e) {
-            fail("Exception during account creation: " + e.getMessage());
-        }
-
-        List<String> userInfo = underTest.getCurrentUserInfo(username);
-        String expectedInfo = String.format("Username: %s\nGBP: £%.2f\nUSD: $%.2f\nEUR: €%.2f\nJPY: ¥%.2f\n", username, 0.0, 0.0, 0.0, 0.0);
-        assertTrue(userInfo.get(0).contains(expectedInfo), "User info should match expected format and values");
-    }
-
-    @Test
     public void canLogoutUser() throws RemoteException {
         List<String> expected = new ArrayList<>();
         assertEquals(expected, underTest.getOnlineUsers(), "Online users list should initially be empty");

@@ -1,2 +1,7 @@
 sender1,recipient1,USD,100.0,PENDING,c1f7064b-37a9-49f9-b00d-66b51cdc9f14
 sender2,recipient2,GBP,200.0,PENDING,037bd668-8880-4f55-955a-e9ecce6eac8a
+test2,test,GBP,100.0,ACCEPTED,653c0120-d270-4cf0-a0de-4eaa18fcf583
+test2,test,GBP,100.0,ACCEPTED,456f996e-29ba-46fe-b712-dc809caa3355
+test2,test,GBP,100.0,ACCEPTED,09d70f96-882a-48ba-b12c-977b8a367eaf
+test,test2,GBP,100.0,CANCELLED,862dff6c-eb85-42fd-8a3b-fe61892327c6
+test,test2,GBP,100.0,PENDING,d2949b45-c7c9-420d-8fb5-edf4053c59ec
